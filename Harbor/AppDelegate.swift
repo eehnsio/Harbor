@@ -62,23 +62,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
 
+        let gitHash = Bundle.main.infoDictionary?["GitCommitHash"] as? String ?? "dev"
         let refreshItem = NSMenuItem(title: "Refresh", action: #selector(refreshAction), keyEquivalent: "r")
         refreshItem.target = self
         menu.addItem(refreshItem)
 
-        let versionItem = NSMenuItem()
-        let gitHash = Bundle.main.infoDictionary?["GitCommitHash"] as? String ?? "dev"
-        versionItem.attributedTitle = NSAttributedString(
-            string: "Harbor \(gitHash)",
-            attributes: [
-                .font: NSFont.systemFont(ofSize: 11),
-                .foregroundColor: NSColor.tertiaryLabelColor,
-            ]
-        )
-        versionItem.isEnabled = false
-        menu.addItem(versionItem)
-
-        let quitItem = NSMenuItem(title: "Quit Harbor", action: #selector(quitAction), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "Quit Harbor \(gitHash)", action: #selector(quitAction), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
 
