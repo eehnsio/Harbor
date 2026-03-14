@@ -76,8 +76,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func makePortItem(port: ListeningPort) -> NSMenuItem {
         let item = NSMenuItem()
         item.representedObject = port.pid
+        let portLabel: String
+        if port.additionalPorts.isEmpty {
+            portLabel = String(port.port)
+        } else {
+            portLabel = "\(port.port) +\(port.additionalPorts.count)"
+        }
         item.view = PortMenuItemView(
-            port: String(port.port),
+            port: portLabel,
             name: port.shortName,
             memory: Formatters.memory(port.physicalMemory),
             uptime: Formatters.uptime(port.uptime),
@@ -192,18 +198,18 @@ class PortMenuItemView: NSView {
         needsDisplay = true
         killButton.isHidden = false
         killButton.contentTintColor = .white
-        memoryLabel.frame.origin.x = killButton.frame.minX - memoryLabel.frame.width - 6
+        uptimeLabel.isHidden = true
+        memoryLabel.isHidden = true
         portLabel.textColor = .white
         nameLabel.textColor = .white
-        uptimeLabel.textColor = .white.withAlphaComponent(0.5)
-        memoryLabel.textColor = .white.withAlphaComponent(0.5)
     }
 
     override func mouseExited(with event: NSEvent) {
         isHighlighted = false
         needsDisplay = true
         killButton.isHidden = true
-        memoryLabel.frame.origin.x = bounds.width - rightPad - memoryLabel.frame.width
+        uptimeLabel.isHidden = false
+        memoryLabel.isHidden = false
         portLabel.textColor = .labelColor
         nameLabel.textColor = .labelColor
         uptimeLabel.textColor = .tertiaryLabelColor
