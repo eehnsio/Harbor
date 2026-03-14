@@ -6,6 +6,7 @@ enum PortScanner {
     /// Scan for listening TCP ports using libproc APIs.
     static func scan() -> [ListeningPort] {
         var ports: [ListeningPort] = []
+        var seen: Set<String> = []  // Deduplicate by pid:port (IPv4 + IPv6 listeners)
         let currentUID = getuid()
 
         // Get all PIDs
@@ -24,7 +25,12 @@ enum PortScanner {
             guard pid > 0 else { continue }
 
             let listeningPorts = getListeningPorts(for: pid, currentUID: currentUID)
-            ports.append(contentsOf: listeningPorts)
+            for port in listeningPorts {
+                let key = "\(port.pid):\(port.port)"
+                if seen.insert(key).inserted {
+                    ports.append(port)
+                }
+            }
         }
 
         return ports.sorted { $0.port < $1.port }
