@@ -66,6 +66,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         refreshItem.target = self
         menu.addItem(refreshItem)
 
+        let versionItem = NSMenuItem()
+        let gitHash = Bundle.main.infoDictionary?["GitCommitHash"] as? String ?? "dev"
+        versionItem.attributedTitle = NSAttributedString(
+            string: "Harbor \(gitHash)",
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 11),
+                .foregroundColor: NSColor.tertiaryLabelColor,
+            ]
+        )
+        versionItem.isEnabled = false
+        menu.addItem(versionItem)
+
         let quitItem = NSMenuItem(title: "Quit Harbor", action: #selector(quitAction), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)

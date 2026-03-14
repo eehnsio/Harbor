@@ -107,6 +107,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = AA18A3D193C4C448EF1F0ED9 /* Build configuration list for PBXNativeTarget "Harbor" */;
 			buildPhases = (
+				067C01AF37ABF68AF3B91009 /* Embed Git Hash */,
 				95C0E0518523BE9E818074B0 /* Sources */,
 				C8A0BF7D5CDC9B3299ABC59F /* Resources */,
 			);
@@ -164,6 +165,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		067C01AF37ABF68AF3B91009 /* Embed Git Hash */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Git Hash";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "hash=$(git -C \"$SRCROOT\" rev-parse --short HEAD 2>/dev/null || echo \"dev\")\n/usr/libexec/PlistBuddy -c \"Set :GitCommitHash $hash\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :GitCommitHash string $hash\" \"$SRCROOT/Harbor/Info.plist\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		95C0E0518523BE9E818074B0 /* Sources */ = {
