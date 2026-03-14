@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "killall Harbor 2>/dev/null; xcodebuild -project /Users/erik/Developer/Harbor/Harbor.xcodeproj -scheme Harbor -configuration Debug build -quiet 2>&1 | tail -3"
+      }
+    ]
+  }
+}
