@@ -1,7 +1,6 @@
 ---
 name: release
 description: Build Harbor Release, copy to /Applications, and relaunch
-disable-model-invocation: true
 ---
 
 # Release Harbor
