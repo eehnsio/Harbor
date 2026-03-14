@@ -1,0 +1,26 @@
+name: Harbor
+options:
+  bundleIdPrefix: com.erik
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+targets:
+  Harbor:
+    type: application
+    platform: macOS
+    sources:
+      - Harbor
+    settings:
+      base:
+        INFOPLIST_FILE: Harbor/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Harbor/Harbor.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.erik.Harbor
+        PRODUCT_NAME: Harbor
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        COMBINE_HIDPI_IMAGES: YES
