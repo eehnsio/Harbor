@@ -62,14 +62,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
 
-        let gitHash = Bundle.main.infoDictionary?["GitCommitHash"] as? String ?? "dev"
         let refreshItem = NSMenuItem(title: "Refresh", action: #selector(refreshAction), keyEquivalent: "r")
         refreshItem.target = self
         menu.addItem(refreshItem)
 
-        let quitItem = NSMenuItem(title: "Quit Harbor \(gitHash)", action: #selector(quitAction), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "Quit Harbor", action: #selector(quitAction), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
+
+        let gitHash = Bundle.main.infoDictionary?["GitCommitHash"] as? String ?? "dev"
+        let versionItem = NSMenuItem()
+        versionItem.attributedTitle = NSAttributedString(
+            string: "Version \(gitHash)",
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 10),
+                .foregroundColor: NSColor.tertiaryLabelColor,
+            ]
+        )
+        versionItem.isEnabled = false
+        menu.addItem(versionItem)
 
         statusItem.menu = menu
     }
@@ -77,14 +88,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func makePortItem(port: ListeningPort) -> NSMenuItem {
         let item = NSMenuItem()
         item.representedObject = port.pid
-        let portLabel: String
-        if port.additionalPorts.isEmpty {
-            portLabel = String(port.port)
-        } else {
-            portLabel = "\(port.port) +\(port.additionalPorts.count)"
-        }
         item.view = PortMenuItemView(
-            port: portLabel,
+            port: String(port.port),
             name: port.shortName,
             memory: Formatters.memory(port.physicalMemory),
             uptime: Formatters.uptime(port.uptime),
@@ -166,15 +171,16 @@ class PortMenuItemView: NSView {
         uptimeLabel.frame = NSRect(x: uptimeX, y: 3, width: uptimeWidth, height: 16)
         addSubview(uptimeLabel)
 
-        // Port number
+        // Port number (fixed width so names align across rows)
+        let portWidth: CGFloat = 52
         portLabel.font = .monospacedDigitSystemFont(ofSize: 13, weight: .medium)
         portLabel.textColor = .labelColor
-        portLabel.sizeToFit()
-        portLabel.frame.origin = NSPoint(x: leftPad, y: 2)
+        portLabel.alignment = .right
+        portLabel.frame = NSRect(x: leftPad, y: 2, width: portWidth, height: 18)
         addSubview(portLabel)
 
         // Name
-        let nameX = leftPad + portLabel.frame.width + 8
+        let nameX = leftPad + portWidth + 8
         nameLabel.font = .systemFont(ofSize: 13)
         nameLabel.textColor = .labelColor
         nameLabel.lineBreakMode = .byTruncatingTail

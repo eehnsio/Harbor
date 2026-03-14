@@ -13,13 +13,11 @@ struct ListeningPort: Identifiable, Hashable {
     let isCurrentUser: Bool
     let localAddress: String
     let isDockerProxy: Bool
-    let additionalPorts: [UInt16]
 
     init(port: UInt16, pid: pid_t, processName: String, displayName: String? = nil,
          processPath: String = "", workingDirectory: String = "",
          uptime: TimeInterval = 0, physicalMemory: UInt64 = 0,
-         isCurrentUser: Bool = true, localAddress: String = "*", isDockerProxy: Bool = false,
-         additionalPorts: [UInt16] = []) {
+         isCurrentUser: Bool = true, localAddress: String = "*", isDockerProxy: Bool = false) {
         self.id = "\(pid):\(port)"
         self.port = port
         self.pid = pid
@@ -32,7 +30,6 @@ struct ListeningPort: Identifiable, Hashable {
         self.isCurrentUser = isCurrentUser
         self.localAddress = localAddress
         self.isDockerProxy = isDockerProxy
-        self.additionalPorts = additionalPorts
     }
 
     /// Project name extracted from displayName ("walle / vite" → "walle")
