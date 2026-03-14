@@ -8,9 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0DAD1F469B464FC5F0748727 /* PortViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210E990DE11BD080A44F302E /* PortViewModel.swift */; };
-		0F4EE5002E3F81B91B80AFA3 /* PortListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D262D9F0CA987B68B44E48A0 /* PortListView.swift */; };
 		18C7F48DB9003DA2CA664ABB /* PortScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FC86455574C255CD59EB4D /* PortScanner.swift */; };
-		2CC7F57C15FF023AE3EBD1F0 /* PortMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A6C154BE9D8C4863EEF98F2 /* PortMenuView.swift */; };
 		72C032721F55E75E69FB04C8 /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFC11E5BFA545149ECA14F2 /* Formatters.swift */; };
 		7E61FFB077F12E45DFEC7630 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF8262DF41C8FD21E61BED0A /* AppDelegate.swift */; };
 		979CFCBD09AB614378CB6B12 /* HarborApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F9AAE05882F9789CEA451C /* HarborApp.swift */; };
@@ -18,7 +16,6 @@
 		CED80A71044286439BBD9913 /* ProcessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF8C8FE995179322875457E /* ProcessManager.swift */; };
 		E9FC781C8F74ADD0418D87AD /* ListeningPort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CCD663F58E56FDD12726843 /* ListeningPort.swift */; };
 		F0E0DF0F9F4AA7B71CBF19E9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 99DA7063445906ED225ACC58 /* Assets.xcassets */; };
-		FF22DFAB76C29C186785D6CD /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76326471A8C71A9C3ED3A5E7 /* PreferencesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,14 +24,11 @@
 		29F9AAE05882F9789CEA451C /* HarborApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarborApp.swift; sourceTree = "<group>"; };
 		38799E22E8C2BA260619954C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5AF8C8FE995179322875457E /* ProcessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessManager.swift; sourceTree = "<group>"; };
-		6A6C154BE9D8C4863EEF98F2 /* PortMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortMenuView.swift; sourceTree = "<group>"; };
-		76326471A8C71A9C3ED3A5E7 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		76FC86455574C255CD59EB4D /* PortScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortScanner.swift; sourceTree = "<group>"; };
 		9056FE4E7096E4BF7EAE89C1 /* Harbor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Harbor.entitlements; sourceTree = "<group>"; };
 		99DA7063445906ED225ACC58 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9CCD663F58E56FDD12726843 /* ListeningPort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListeningPort.swift; sourceTree = "<group>"; };
 		AFFC11E5BFA545149ECA14F2 /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
-		D262D9F0CA987B68B44E48A0 /* PortListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortListView.swift; sourceTree = "<group>"; };
 		EF8262DF41C8FD21E61BED0A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F4A098FA2BAEE5F46EA2760B /* Harbor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Harbor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -86,7 +80,6 @@
 				70E15C21A2CB1D087F67352C /* Services */,
 				C23C629F6445976918C93D0B /* Utilities */,
 				852C77DA8CFD2846FFAF9792 /* ViewModels */,
-				CDFB6BE0E76510461D5EFA74 /* Views */,
 			);
 			path = Harbor;
 			sourceTree = "<group>";
@@ -105,16 +98,6 @@
 				F4A098FA2BAEE5F46EA2760B /* Harbor.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		CDFB6BE0E76510461D5EFA74 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				D262D9F0CA987B68B44E48A0 /* PortListView.swift */,
-				6A6C154BE9D8C4863EEF98F2 /* PortMenuView.swift */,
-				76326471A8C71A9C3ED3A5E7 /* PreferencesView.swift */,
-			);
-			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -191,11 +174,8 @@
 				72C032721F55E75E69FB04C8 /* Formatters.swift in Sources */,
 				979CFCBD09AB614378CB6B12 /* HarborApp.swift in Sources */,
 				E9FC781C8F74ADD0418D87AD /* ListeningPort.swift in Sources */,
-				0F4EE5002E3F81B91B80AFA3 /* PortListView.swift in Sources */,
-				2CC7F57C15FF023AE3EBD1F0 /* PortMenuView.swift in Sources */,
 				18C7F48DB9003DA2CA664ABB /* PortScanner.swift in Sources */,
 				0DAD1F469B464FC5F0748727 /* PortViewModel.swift in Sources */,
-				FF22DFAB76C29C186785D6CD /* PreferencesView.swift in Sources */,
 				A428156741B34B1AF36E251A /* ProcessInspector.swift in Sources */,
 				CED80A71044286439BBD9913 /* ProcessManager.swift in Sources */,
 			);
