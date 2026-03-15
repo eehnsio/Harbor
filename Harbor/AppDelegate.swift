@@ -183,16 +183,15 @@ class PortMenuItemView: NSView {
         uptimeLabel.frame = NSRect(x: uptimeX, y: 3, width: uptimeWidth, height: 16)
         addSubview(uptimeLabel)
 
-        // Port number (fixed width so names align across rows)
-        let portWidth: CGFloat = 52
+        // Port number
         portLabel.font = .monospacedDigitSystemFont(ofSize: 13, weight: .medium)
         portLabel.textColor = .labelColor
-        portLabel.alignment = .right
-        portLabel.frame = NSRect(x: leftPad, y: 2, width: portWidth, height: 18)
+        portLabel.sizeToFit()
+        portLabel.frame.origin = NSPoint(x: leftPad, y: 2)
         addSubview(portLabel)
 
-        // Name
-        let nameX = leftPad + portWidth + 8
+        // Name — fixed start position so labels align across rows
+        let nameX = leftPad + portLabel.frame.width + 8
         nameLabel.font = .systemFont(ofSize: 13)
         nameLabel.textColor = .labelColor
         nameLabel.lineBreakMode = .byTruncatingTail
