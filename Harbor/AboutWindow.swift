@@ -56,14 +56,26 @@ class AboutWindow {
         descLabel.frame = NSRect(x: 0, y: h - 148, width: w, height: 16)
         content.addSubview(descLabel)
 
-        // GitHub link
-        let ghButton = LinkButton(title: "GitHub", url: "https://github.com/eehnsio/Harbor")
-        ghButton.frame = NSRect(x: (w - 120) / 2 - 32, y: 20, width: 80, height: 24)
+        // Buttons
+        let buttonWidth: CGFloat = 110
+        let buttonGap: CGFloat = 10
+        let totalWidth = buttonWidth * 2 + buttonGap
+        let startX = (w - totalWidth) / 2
+
+        let ghButton = IconLinkButton(
+            title: " GitHub",
+            symbolName: "chevron.left.forwardslash.chevron.right",
+            url: "https://github.com/eehnsio/Harbor"
+        )
+        ghButton.frame = NSRect(x: startX, y: 18, width: buttonWidth, height: 28)
         content.addSubview(ghButton)
 
-        // Buy Me a Coffee link
-        let coffeeButton = LinkButton(title: "Support", url: "https://buymeacoffee.com/eehnsio")
-        coffeeButton.frame = NSRect(x: (w - 120) / 2 + 52, y: 20, width: 80, height: 24)
+        let coffeeButton = IconLinkButton(
+            title: " Support",
+            symbolName: "heart.fill",
+            url: "https://buymeacoffee.com/eehnsio"
+        )
+        coffeeButton.frame = NSRect(x: startX + buttonWidth + buttonGap, y: 18, width: buttonWidth, height: 28)
         content.addSubview(coffeeButton)
 
         window.contentView = content
@@ -74,22 +86,22 @@ class AboutWindow {
     }
 }
 
-// MARK: - Clickable link button
+// MARK: - Icon link button
 
-private class LinkButton: NSButton {
+private class IconLinkButton: NSButton {
     private let url: String
 
-    init(title: String, url: String) {
+    init(title: String, symbolName: String, url: String) {
         self.url = url
         super.init(frame: .zero)
 
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 12),
-            .foregroundColor: NSColor.linkColor,
-            .underlineStyle: NSUnderlineStyle.single.rawValue,
-        ]
-        attributedTitle = NSAttributedString(string: title, attributes: attrs)
-        isBordered = false
+        self.title = title
+        image = NSImage(systemSymbolName: symbolName, accessibilityDescription: title)?
+            .withSymbolConfiguration(.init(pointSize: 11, weight: .medium))
+        imagePosition = .imageLeading
+        bezelStyle = .rounded
+        controlSize = .regular
+        font = .systemFont(ofSize: 12)
         target = self
         action = #selector(openLink)
     }
