@@ -73,7 +73,7 @@ class AboutWindow {
 
         let ghButton = IconLinkButton(
             title: " GitHub",
-            bundleImage: "github-mark",
+            symbolName: "chevron.left.forwardslash.chevron.right",
             url: "https://github.com/eehnsio/Harbor"
         )
         ghButton.frame = NSRect(x: startX, y: 18, width: buttonWidth, height: 28)
