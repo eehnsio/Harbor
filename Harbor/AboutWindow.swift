@@ -73,7 +73,7 @@ class AboutWindow {
 
         let ghButton = IconLinkButton(
             title: " GitHub",
-            iconName: "github",
+            symbolName: "chevron.left.forwardslash.chevron.right",
             url: "https://github.com/eehnsio/Harbor"
         )
         ghButton.frame = NSRect(x: startX, y: 18, width: buttonWidth, height: 28)
@@ -81,7 +81,7 @@ class AboutWindow {
 
         let coffeeButton = IconLinkButton(
             title: " Support",
-            iconName: "coffee",
+            symbolName: "cup.and.saucer.fill",
             url: "https://buymeacoffee.com/eehnsio"
         )
         coffeeButton.frame = NSRect(x: startX + buttonWidth + buttonGap, y: 18, width: buttonWidth, height: 28)
@@ -100,20 +100,13 @@ class AboutWindow {
 private class IconLinkButton: NSButton {
     private let url: String
 
-    init(title: String, iconName: String, url: String) {
+    init(title: String, symbolName: String, url: String) {
         self.url = url
         super.init(frame: .zero)
 
         self.title = title
-        if let img = NSImage(named: NSImage.Name(iconName)) {
-            img.size = NSSize(width: 14, height: 14)
-            image = img
-        } else {
-            // Fallback to SF Symbol
-            let fallback: String = iconName == "github" ? "chevron.left.forwardslash.chevron.right" : "heart.fill"
-            image = NSImage(systemSymbolName: fallback, accessibilityDescription: title)?
-                .withSymbolConfiguration(.init(pointSize: 11, weight: .medium))
-        }
+        image = NSImage(systemSymbolName: symbolName, accessibilityDescription: title)?
+            .withSymbolConfiguration(.init(pointSize: 11, weight: .medium))
         imagePosition = .imageLeading
         bezelStyle = .rounded
         controlSize = .regular
