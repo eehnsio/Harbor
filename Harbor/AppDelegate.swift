@@ -90,49 +90,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         showAllItem.state = showAllPorts ? .on : .off
         menu.addItem(showAllItem)
 
-        // Update item
+        // Update / version row
+        let updateItem = NSMenuItem()
+        updateItem.target = self
         switch updateStatus {
         case .available(let version, _):
-            let updateItem = NSMenuItem(title: "Update available (v\(version))", action: #selector(performUpdate), keyEquivalent: "")
-            updateItem.target = self
-            updateItem.attributedTitle = NSAttributedString(
-                string: "Update available (v\(version))",
-                attributes: [.font: NSFont.systemFont(ofSize: 13, weight: .medium)]
-            )
-            menu.addItem(updateItem)
+            updateItem.title = "Update available (v\(version))"
+            updateItem.action = #selector(performUpdate)
         case .downloading(let progress):
-            let pct = Int(progress * 100)
-            let item = NSMenuItem(title: "Downloading update... \(pct)%", action: nil, keyEquivalent: "")
-            item.isEnabled = false
-            menu.addItem(item)
+            updateItem.title = "Downloading update... \(Int(progress * 100))%"
+            updateItem.isEnabled = false
         case .installing:
-            let item = NSMenuItem(title: "Installing update...", action: nil, keyEquivalent: "")
-            item.isEnabled = false
-            menu.addItem(item)
+            updateItem.title = "Installing update..."
+            updateItem.isEnabled = false
         case .failed:
-            let item = NSMenuItem(title: "Update failed — Retry", action: #selector(performUpdate), keyEquivalent: "")
-            item.target = self
-            menu.addItem(item)
+            updateItem.title = "Update failed — Retry"
+            updateItem.action = #selector(performUpdate)
         default:
-            break
+            updateItem.title = "Check for updates"
+            updateItem.action = #selector(checkForUpdatesAction)
         }
+        menu.addItem(updateItem)
 
         let quitItem = NSMenuItem(title: "Quit Harbor", action: #selector(quitAction), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
-
-        let version = UpdateChecker.currentVersion
-        let gitHash = Bundle.main.infoDictionary?["GitCommitHash"] as? String ?? "dev"
-        let versionItem = NSMenuItem()
-        versionItem.attributedTitle = NSAttributedString(
-            string: "Version \(version) (\(gitHash))",
-            attributes: [
-                .font: NSFont.systemFont(ofSize: 10),
-                .foregroundColor: NSColor.tertiaryLabelColor,
-            ]
-        )
-        versionItem.isEnabled = false
-        menu.addItem(versionItem)
 
         statusItem.menu = menu
     }
@@ -160,6 +142,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         return item
     }
+
+    @objc private func checkForUpdatesAction() { checkForUpdates() }
 
     @objc private func toggleShowAllPorts() {
         showAllPorts.toggle()

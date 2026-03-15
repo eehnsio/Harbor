@@ -17,6 +17,8 @@ targets:
           hash=$(git -C "$SRCROOT" rev-parse --short HEAD 2>/dev/null || echo "dev")
           /usr/libexec/PlistBuddy -c "Set :GitCommitHash $hash" "$SRCROOT/Harbor/Info.plist" 2>/dev/null || \
           /usr/libexec/PlistBuddy -c "Add :GitCommitHash string $hash" "$SRCROOT/Harbor/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$SRCROOT/Harbor/Info.plist" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string $MARKETING_VERSION" "$SRCROOT/Harbor/Info.plist"
     settings:
       base:
         INFOPLIST_FILE: Harbor/Info.plist
