@@ -26,9 +26,10 @@ class AboutWindow {
 
         let content = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
 
-        // App icon — load from asset catalog directly (NSApp.applicationIconImage is blank for LSUIElement apps)
+        // App icon — use NSWorkspace to get the icon for this app bundle
         let iconView = NSImageView(frame: NSRect(x: (w - 64) / 2, y: h - 80, width: 64, height: 64))
-        iconView.image = NSImage(named: "AppIcon")
+        iconView.image = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
+        iconView.image?.size = NSSize(width: 64, height: 64)
         content.addSubview(iconView)
 
         // App name
