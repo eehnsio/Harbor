@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "killall Harbor 2>/dev/null; xcodebuild -project /Users/erik/Developer/Harbor/Harbor.xcodeproj -scheme Harbor -configuration Debug build -quiet 2>&1 | tail -3"
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'project.yml'; then cd /Users/erik/Developer/Harbor && xcodegen generate 2>&1 | tail -1; fi; killall Harbor 2>/dev/null; xcodebuild -project /Users/erik/Developer/Harbor/Harbor.xcodeproj -scheme Harbor -configuration Debug build -quiet 2>&1 | tail -3"
           }
         ]
       }
