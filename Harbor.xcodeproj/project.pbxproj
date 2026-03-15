@@ -192,7 +192,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "hash=$(git -C \"$SRCROOT\" rev-parse --short HEAD 2>/dev/null || echo \"dev\")\n/usr/libexec/PlistBuddy -c \"Set :GitCommitHash $hash\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :GitCommitHash string $hash\" \"$SRCROOT/Harbor/Info.plist\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $MARKETING_VERSION\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :CFBundleShortVersionString string $MARKETING_VERSION\" \"$SRCROOT/Harbor/Info.plist\"\n";
+			shellScript = "hash=$(git -C \"$SRCROOT\" rev-parse --short HEAD 2>/dev/null || echo \"dev\")\n/usr/libexec/PlistBuddy -c \"Set :GitCommitHash $hash\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :GitCommitHash string $hash\" \"$SRCROOT/Harbor/Info.plist\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $MARKETING_VERSION\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :CFBundleShortVersionString string $MARKETING_VERSION\" \"$SRCROOT/Harbor/Info.plist\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleIconName AppIcon\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :CFBundleIconName string AppIcon\" \"$SRCROOT/Harbor/Info.plist\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

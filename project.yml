@@ -19,6 +19,8 @@ targets:
           /usr/libexec/PlistBuddy -c "Add :GitCommitHash string $hash" "$SRCROOT/Harbor/Info.plist"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$SRCROOT/Harbor/Info.plist" 2>/dev/null || \
           /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string $MARKETING_VERSION" "$SRCROOT/Harbor/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIconName AppIcon" "$SRCROOT/Harbor/Info.plist" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$SRCROOT/Harbor/Info.plist"
     settings:
       base:
         INFOPLIST_FILE: Harbor/Info.plist
