@@ -12,6 +12,7 @@
 		715892FD03195A31C97B37FF /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82E49A603F482EAFD59446A /* UpdateChecker.swift */; };
 		72C032721F55E75E69FB04C8 /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFC11E5BFA545149ECA14F2 /* Formatters.swift */; };
 		7E61FFB077F12E45DFEC7630 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF8262DF41C8FD21E61BED0A /* AppDelegate.swift */; };
+		8D88D88D5352120AABBF0B32 /* AboutWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFB3C133C2168E6A779A28A0 /* AboutWindow.swift */; };
 		979CFCBD09AB614378CB6B12 /* HarborApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F9AAE05882F9789CEA451C /* HarborApp.swift */; };
 		A428156741B34B1AF36E251A /* ProcessInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22392D08084588E4B542EE17 /* ProcessInspector.swift */; };
 		A9B4B5DD20827FC9A74DF8DA /* AppUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A91A48A4F7B7C2857B740C0 /* AppUpdater.swift */; };
@@ -35,6 +36,7 @@
 		E82E49A603F482EAFD59446A /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		EF8262DF41C8FD21E61BED0A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F4A098FA2BAEE5F46EA2760B /* Harbor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Harbor.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FFB3C133C2168E6A779A28A0 /* AboutWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutWindow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -77,6 +79,7 @@
 		BF003DDB7C2B097E650D3CE9 /* Harbor */ = {
 			isa = PBXGroup;
 			children = (
+				FFB3C133C2168E6A779A28A0 /* AboutWindow.swift */,
 				EF8262DF41C8FD21E61BED0A /* AppDelegate.swift */,
 				99DA7063445906ED225ACC58 /* Assets.xcassets */,
 				9056FE4E7096E4BF7EAE89C1 /* Harbor.entitlements */,
@@ -198,6 +201,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8D88D88D5352120AABBF0B32 /* AboutWindow.swift in Sources */,
 				7E61FFB077F12E45DFEC7630 /* AppDelegate.swift in Sources */,
 				A9B4B5DD20827FC9A74DF8DA /* AppUpdater.swift in Sources */,
 				72C032721F55E75E69FB04C8 /* Formatters.swift in Sources */,

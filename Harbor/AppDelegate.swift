@@ -108,6 +108,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             break
         }
 
+        let aboutItem = NSMenuItem(title: "About Harbor", action: #selector(showAbout), keyEquivalent: "")
+        aboutItem.target = self
+        menu.addItem(aboutItem)
+
         let quitItem = NSMenuItem(title: "Quit Harbor", action: #selector(quitAction), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
@@ -138,6 +142,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         return item
     }
+
+    @objc private func showAbout() { AboutWindow.show() }
 
     @objc private func toggleShowAllPorts() {
         showAllPorts.toggle()
