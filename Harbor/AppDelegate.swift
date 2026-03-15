@@ -26,8 +26,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func checkForUpdates() {
-        updateStatus = .checking
-        rebuildMenu()
         Task {
             let status = await UpdateChecker.check()
             updateStatus = status
@@ -92,45 +90,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         showAllItem.state = showAllPorts ? .on : .off
         menu.addItem(showAllItem)
 
-        // Update / version row (NSView-based so clicks don't close menu)
-        let updateTitle: String
-        let updateClickable: Bool
+        // Only show update item when an update is available or in progress
         switch updateStatus {
         case .available(let version, _):
-            updateTitle = "Update available (v\(version))"
-            updateClickable = true
+            let item = NSMenuItem(title: "Update available (v\(version))", action: #selector(performUpdate), keyEquivalent: "")
+            item.target = self
+            menu.addItem(item)
         case .downloading(let progress):
-            updateTitle = "Downloading update... \(Int(progress * 100))%"
-            updateClickable = false
+            let item = NSMenuItem(title: "Downloading... \(Int(progress * 100))%", action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            menu.addItem(item)
         case .installing:
-            updateTitle = "Installing update..."
-            updateClickable = false
-        case .failed:
-            updateTitle = "Update failed — Retry"
-            updateClickable = true
-        case .checking:
-            updateTitle = "Checking for updates..."
-            updateClickable = false
+            let item = NSMenuItem(title: "Installing...", action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            menu.addItem(item)
         default:
-            updateTitle = "Check for updates"
-            updateClickable = true
+            break
         }
-        let updateItem = NSMenuItem()
-        updateItem.view = UpdateMenuItemView(
-            title: updateTitle,
-            clickable: updateClickable,
-            width: menuWidth
-        ) { [weak self] in
-            guard let self else { return }
-            if case .available = self.updateStatus {
-                self.performUpdate()
-            } else if case .failed = self.updateStatus {
-                self.performUpdate()
-            } else {
-                self.checkForUpdates()
-            }
-        }
-        menu.addItem(updateItem)
 
         let quitItem = NSMenuItem(title: "Quit Harbor", action: #selector(quitAction), keyEquivalent: "q")
         quitItem.target = self
@@ -161,20 +137,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         )
         return item
-    }
-
-    @objc private func checkForUpdatesAction(_ sender: NSMenuItem) {
-        sender.title = "Checking for updates..."
-        sender.action = nil
-        Task {
-            let status = await UpdateChecker.check()
-            updateStatus = status
-            if case .upToDate = status {
-                sender.title = "Up to date"
-                try? await Task.sleep(for: .seconds(2))
-            }
-            rebuildMenu()
-        }
     }
 
     @objc private func toggleShowAllPorts() {
@@ -342,63 +304,3 @@ class PortMenuItemView: NSView {
     }
 }
 
-// MARK: - Update menu item view (doesn't close menu on click)
-
-class UpdateMenuItemView: NSView {
-    private var trackingArea: NSTrackingArea?
-    private var isHighlighted = false
-    private let label: NSTextField
-    private let onClick: () -> Void
-    private let clickable: Bool
-
-    init(title: String, clickable: Bool, width: CGFloat, onClick: @escaping () -> Void) {
-        self.onClick = onClick
-        self.clickable = clickable
-        label = NSTextField(labelWithString: title)
-        super.init(frame: NSRect(x: 0, y: 0, width: width, height: 22))
-
-        label.font = .systemFont(ofSize: 13)
-        label.textColor = clickable ? .labelColor : .tertiaryLabelColor
-        label.frame = NSRect(x: 20, y: 2, width: width - 40, height: 18)
-        addSubview(label)
-    }
-
-    required init?(coder: NSCoder) { fatalError() }
-
-    override func updateTrackingAreas() {
-        super.updateTrackingAreas()
-        if let existing = trackingArea { removeTrackingArea(existing) }
-        trackingArea = NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self)
-        addTrackingArea(trackingArea!)
-    }
-
-    override func mouseEntered(with event: NSEvent) {
-        guard clickable else { return }
-        isHighlighted = true
-        label.textColor = .white
-        needsDisplay = true
-    }
-
-    override func mouseExited(with event: NSEvent) {
-        isHighlighted = false
-        label.textColor = clickable ? .labelColor : .tertiaryLabelColor
-        needsDisplay = true
-    }
-
-    override func mouseUp(with event: NSEvent) {
-        guard clickable else { return }
-        // Don't call cancelTracking — keeps menu open
-        label.stringValue = "Checking for updates..."
-        label.textColor = .tertiaryLabelColor
-        isHighlighted = false
-        needsDisplay = true
-        onClick()
-    }
-
-    override func draw(_ dirtyRect: NSRect) {
-        if isHighlighted {
-            NSColor.selectedContentBackgroundColor.setFill()
-            NSBezierPath(roundedRect: bounds.insetBy(dx: 5, dy: 0), xRadius: 4, yRadius: 4).fill()
-        }
-    }
-}
