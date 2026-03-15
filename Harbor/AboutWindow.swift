@@ -26,9 +26,9 @@ class AboutWindow {
 
         let content = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
 
-        // App icon
+        // App icon — load from asset catalog directly (NSApp.applicationIconImage is blank for LSUIElement apps)
         let iconView = NSImageView(frame: NSRect(x: (w - 64) / 2, y: h - 80, width: 64, height: 64))
-        iconView.image = NSApp.applicationIconImage
+        iconView.image = NSImage(named: "AppIcon")
         content.addSubview(iconView)
 
         // App name
@@ -104,9 +104,14 @@ private class IconLinkButton: NSButton {
         super.init(frame: .zero)
 
         self.title = title
-        if let img = NSImage(named: iconName) {
+        if let img = NSImage(named: NSImage.Name(iconName)) {
             img.size = NSSize(width: 14, height: 14)
             image = img
+        } else {
+            // Fallback to SF Symbol
+            let fallback: String = iconName == "github" ? "chevron.left.forwardslash.chevron.right" : "heart.fill"
+            image = NSImage(systemSymbolName: fallback, accessibilityDescription: title)?
+                .withSymbolConfiguration(.init(pointSize: 11, weight: .medium))
         }
         imagePosition = .imageLeading
         bezelStyle = .rounded
