@@ -6,6 +6,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let viewModel = PortViewModel()
     private let menuWidth: CGFloat = 290
     private var showAllPorts = false
+    private var updateStatus: UpdateStatus = .idle
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -15,6 +16,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.refreshAndRebuild() }
+        }
+
+        // Check for updates on launch, then every hour
+        checkForUpdates()
+        Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.checkForUpdates() }
+        }
+    }
+
+    private func checkForUpdates() {
+        Task {
+            let status = await UpdateChecker.check()
+            updateStatus = status
+            rebuildMenu()
         }
     }
 
@@ -75,14 +90,42 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         showAllItem.state = showAllPorts ? .on : .off
         menu.addItem(showAllItem)
 
+        // Update item
+        switch updateStatus {
+        case .available(let version, _):
+            let updateItem = NSMenuItem(title: "Update available (v\(version))", action: #selector(performUpdate), keyEquivalent: "")
+            updateItem.target = self
+            updateItem.attributedTitle = NSAttributedString(
+                string: "Update available (v\(version))",
+                attributes: [.font: NSFont.systemFont(ofSize: 13, weight: .medium)]
+            )
+            menu.addItem(updateItem)
+        case .downloading(let progress):
+            let pct = Int(progress * 100)
+            let item = NSMenuItem(title: "Downloading update... \(pct)%", action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            menu.addItem(item)
+        case .installing:
+            let item = NSMenuItem(title: "Installing update...", action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            menu.addItem(item)
+        case .failed:
+            let item = NSMenuItem(title: "Update failed — Retry", action: #selector(performUpdate), keyEquivalent: "")
+            item.target = self
+            menu.addItem(item)
+        default:
+            break
+        }
+
         let quitItem = NSMenuItem(title: "Quit Harbor", action: #selector(quitAction), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
 
+        let version = UpdateChecker.currentVersion
         let gitHash = Bundle.main.infoDictionary?["GitCommitHash"] as? String ?? "dev"
         let versionItem = NSMenuItem()
         versionItem.attributedTitle = NSAttributedString(
-            string: "Version \(gitHash)",
+            string: "Version \(version) (\(gitHash))",
             attributes: [
                 .font: NSFont.systemFont(ofSize: 10),
                 .foregroundColor: NSColor.tertiaryLabelColor,
@@ -122,6 +165,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         showAllPorts.toggle()
         refreshAndRebuild()
     }
+
+    @objc private func performUpdate() {
+        guard case .available(_, let url) = updateStatus else {
+            // Retry: re-check first
+            checkForUpdates()
+            return
+        }
+        updateStatus = .downloading(progress: 0)
+        rebuildMenu()
+
+        Task {
+            do {
+                try await AppUpdater.update(from: url) { [weak self] progress in
+                    Task { @MainActor in
+                        self?.updateStatus = .downloading(progress: progress)
+                        self?.rebuildMenu()
+                    }
+                }
+            } catch {
+                updateStatus = .failed(error.localizedDescription)
+                rebuildMenu()
+            }
+        }
+    }
+
     @objc private func quitAction() { NSApplication.shared.terminate(nil) }
 }
 
