@@ -28,6 +28,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.minimumWidth = menuWidth
         let devPorts = viewModel.ports.filter { $0.isDevPort }
 
+        // Compute max port label width so all columns align
+        let portFont = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .medium)
+        let maxPortWidth = devPorts.reduce(CGFloat(0)) { maxW, p in
+            let w = (String(p.port) as NSString).size(withAttributes: [.font: portFont]).width
+            return max(maxW, w)
+        }
+
         if devPorts.isEmpty {
             let item = NSMenuItem(title: "No dev ports", action: nil, keyEquivalent: "")
             item.isEnabled = false
@@ -52,7 +59,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 menu.addItem(header)
 
                 for port in ports {
-                    menu.addItem(makePortItem(port: port))
+                    menu.addItem(makePortItem(port: port, portColumnWidth: maxPortWidth))
                 }
 
                 if index < sortedGroups.count - 1 {
@@ -87,11 +94,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.menu = menu
     }
 
-    private func makePortItem(port: ListeningPort) -> NSMenuItem {
+    private func makePortItem(port: ListeningPort, portColumnWidth: CGFloat) -> NSMenuItem {
         let item = NSMenuItem()
         item.representedObject = port.pid
         item.view = PortMenuItemView(
             port: String(port.port),
+            portColumnWidth: portColumnWidth,
             name: port.shortName,
             memory: Formatters.memory(port.physicalMemory),
             uptime: Formatters.uptime(port.uptime),
@@ -133,8 +141,11 @@ class PortMenuItemView: NSView {
 
     private let rightPad: CGFloat = 14
 
-    init(port: String, name: String, memory: String, uptime: String, width: CGFloat,
+    private let portColumnWidth: CGFloat
+
+    init(port: String, portColumnWidth: CGFloat = 40, name: String, memory: String, uptime: String, width: CGFloat,
          onClick: @escaping () -> Void = {}, onKill: @escaping () -> Void) {
+        self.portColumnWidth = portColumnWidth
         self.onClick = onClick
         self.onKill = onKill
         portLabel = NSTextField(labelWithString: port)
@@ -183,15 +194,15 @@ class PortMenuItemView: NSView {
         uptimeLabel.frame = NSRect(x: uptimeX, y: 3, width: uptimeWidth, height: 16)
         addSubview(uptimeLabel)
 
-        // Port number
+        // Port number — right-aligned within shared column width
         portLabel.font = .monospacedDigitSystemFont(ofSize: 13, weight: .medium)
         portLabel.textColor = .labelColor
-        portLabel.sizeToFit()
-        portLabel.frame.origin = NSPoint(x: leftPad, y: 2)
+        portLabel.alignment = .right
+        portLabel.frame = NSRect(x: leftPad, y: 2, width: portColumnWidth, height: 18)
         addSubview(portLabel)
 
-        // Name — fixed start position so labels align across rows
-        let nameX = leftPad + portLabel.frame.width + 8
+        // Name — fixed start position based on shared column width
+        let nameX = leftPad + portColumnWidth + 8
         nameLabel.font = .systemFont(ofSize: 13)
         nameLabel.textColor = .labelColor
         nameLabel.lineBreakMode = .byTruncatingTail
