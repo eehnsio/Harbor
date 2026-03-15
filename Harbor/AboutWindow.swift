@@ -73,7 +73,7 @@ class AboutWindow {
 
         let ghButton = IconLinkButton(
             title: " GitHub",
-            symbolName: "chevron.left.forwardslash.chevron.right",
+            bundleImage: "github-mark",
             url: "https://github.com/eehnsio/Harbor"
         )
         ghButton.frame = NSRect(x: startX, y: 18, width: buttonWidth, height: 28)
@@ -100,13 +100,25 @@ class AboutWindow {
 private class IconLinkButton: NSButton {
     private let url: String
 
-    init(title: String, symbolName: String, url: String) {
-        self.url = url
-        super.init(frame: .zero)
-
-        self.title = title
+    convenience init(title: String, symbolName: String, url: String) {
+        self.init(title: title, url: url)
         image = NSImage(systemSymbolName: symbolName, accessibilityDescription: title)?
             .withSymbolConfiguration(.init(pointSize: 11, weight: .medium))
+    }
+
+    convenience init(title: String, bundleImage: String, url: String) {
+        self.init(title: title, url: url)
+        if let img = Bundle.main.image(forResource: bundleImage) {
+            img.size = NSSize(width: 14, height: 14)
+            img.isTemplate = true  // adapts to light/dark mode
+            image = img
+        }
+    }
+
+    private init(title: String, url: String) {
+        self.url = url
+        super.init(frame: .zero)
+        self.title = title
         imagePosition = .imageLeading
         bezelStyle = .rounded
         controlSize = .regular
