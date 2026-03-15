@@ -72,7 +72,7 @@ class AboutWindow {
 
         let ghButton = IconLinkButton(
             title: " GitHub",
-            symbolName: "chevron.left.forwardslash.chevron.right",
+            iconName: "github",
             url: "https://github.com/eehnsio/Harbor"
         )
         ghButton.frame = NSRect(x: startX, y: 18, width: buttonWidth, height: 28)
@@ -80,7 +80,7 @@ class AboutWindow {
 
         let coffeeButton = IconLinkButton(
             title: " Support",
-            symbolName: "heart.fill",
+            iconName: "coffee",
             url: "https://buymeacoffee.com/eehnsio"
         )
         coffeeButton.frame = NSRect(x: startX + buttonWidth + buttonGap, y: 18, width: buttonWidth, height: 28)
@@ -99,13 +99,15 @@ class AboutWindow {
 private class IconLinkButton: NSButton {
     private let url: String
 
-    init(title: String, symbolName: String, url: String) {
+    init(title: String, iconName: String, url: String) {
         self.url = url
         super.init(frame: .zero)
 
         self.title = title
-        image = NSImage(systemSymbolName: symbolName, accessibilityDescription: title)?
-            .withSymbolConfiguration(.init(pointSize: 11, weight: .medium))
+        if let img = NSImage(named: iconName) {
+            img.size = NSSize(width: 14, height: 14)
+            image = img
+        }
         imagePosition = .imageLeading
         bezelStyle = .rounded
         controlSize = .regular
