@@ -5,6 +5,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private let viewModel = PortViewModel()
     private let menuWidth: CGFloat = 290
+    private var showAllPorts = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -18,7 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func refreshAndRebuild() {
-        viewModel.refresh()
+        viewModel.refresh(showAll: showAllPorts)
         rebuildMenu()
     }
 
@@ -62,9 +63,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
 
-        let refreshItem = NSMenuItem(title: "Refresh", action: #selector(refreshAction), keyEquivalent: "r")
-        refreshItem.target = self
-        menu.addItem(refreshItem)
+        let showAllItem = NSMenuItem(title: "Show All Ports", action: #selector(toggleShowAllPorts), keyEquivalent: "")
+        showAllItem.target = self
+        showAllItem.state = showAllPorts ? .on : .off
+        menu.addItem(showAllItem)
 
         let quitItem = NSMenuItem(title: "Quit Harbor", action: #selector(quitAction), keyEquivalent: "q")
         quitItem.target = self
@@ -94,6 +96,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             memory: Formatters.memory(port.physicalMemory),
             uptime: Formatters.uptime(port.uptime),
             width: menuWidth,
+            onClick: {
+                let url = URL(string: "http://localhost:\(port.port)")!
+                NSWorkspace.shared.open(url)
+            },
             onKill: { [weak self] in
                 self?.viewModel.killProcess(port)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -104,7 +110,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return item
     }
 
-    @objc private func refreshAction() { refreshAndRebuild() }
+    @objc private func toggleShowAllPorts() {
+        showAllPorts.toggle()
+        refreshAndRebuild()
+    }
     @objc private func quitAction() { NSApplication.shared.terminate(nil) }
 }
 
@@ -113,6 +122,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 class PortMenuItemView: NSView {
     private var trackingArea: NSTrackingArea?
     private var isHighlighted = false
+    private let onClick: () -> Void
     private let onKill: () -> Void
 
     private let portLabel: NSTextField
@@ -123,7 +133,9 @@ class PortMenuItemView: NSView {
 
     private let rightPad: CGFloat = 14
 
-    init(port: String, name: String, memory: String, uptime: String, width: CGFloat, onKill: @escaping () -> Void) {
+    init(port: String, name: String, memory: String, uptime: String, width: CGFloat,
+         onClick: @escaping () -> Void = {}, onKill: @escaping () -> Void) {
+        self.onClick = onClick
         self.onKill = onKill
         portLabel = NSTextField(labelWithString: port)
         nameLabel = NSTextField(labelWithString: name)
@@ -223,7 +235,10 @@ class PortMenuItemView: NSView {
         memoryLabel.textColor = .tertiaryLabelColor
     }
 
-    override func mouseUp(with event: NSEvent) {}
+    override func mouseUp(with event: NSEvent) {
+        enclosingMenuItem?.menu?.cancelTracking()
+        onClick()
+    }
 
     override func draw(_ dirtyRect: NSRect) {
         if isHighlighted {
