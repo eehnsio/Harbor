@@ -11,6 +11,7 @@
 		18C7F48DB9003DA2CA664ABB /* PortScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FC86455574C255CD59EB4D /* PortScanner.swift */; };
 		715892FD03195A31C97B37FF /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82E49A603F482EAFD59446A /* UpdateChecker.swift */; };
 		72C032721F55E75E69FB04C8 /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFC11E5BFA545149ECA14F2 /* Formatters.swift */; };
+		7AC9064480B05C96743445F3 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 34AC0739DC5227CA0205377E /* AppIcon.icns */; };
 		7E61FFB077F12E45DFEC7630 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF8262DF41C8FD21E61BED0A /* AppDelegate.swift */; };
 		8D88D88D5352120AABBF0B32 /* AboutWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFB3C133C2168E6A779A28A0 /* AboutWindow.swift */; };
 		979CFCBD09AB614378CB6B12 /* HarborApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F9AAE05882F9789CEA451C /* HarborApp.swift */; };
@@ -25,6 +26,7 @@
 		210E990DE11BD080A44F302E /* PortViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortViewModel.swift; sourceTree = "<group>"; };
 		22392D08084588E4B542EE17 /* ProcessInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessInspector.swift; sourceTree = "<group>"; };
 		29F9AAE05882F9789CEA451C /* HarborApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarborApp.swift; sourceTree = "<group>"; };
+		34AC0739DC5227CA0205377E /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		38799E22E8C2BA260619954C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5AF8C8FE995179322875457E /* ProcessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessManager.swift; sourceTree = "<group>"; };
 		6A91A48A4F7B7C2857B740C0 /* AppUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdater.swift; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 			children = (
 				FFB3C133C2168E6A779A28A0 /* AboutWindow.swift */,
 				EF8262DF41C8FD21E61BED0A /* AppDelegate.swift */,
+				34AC0739DC5227CA0205377E /* AppIcon.icns */,
 				99DA7063445906ED225ACC58 /* Assets.xcassets */,
 				9056FE4E7096E4BF7EAE89C1 /* Harbor.entitlements */,
 				29F9AAE05882F9789CEA451C /* HarborApp.swift */,
@@ -169,6 +172,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7AC9064480B05C96743445F3 /* AppIcon.icns in Resources */,
 				F0E0DF0F9F4AA7B71CBF19E9 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -192,7 +196,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "hash=$(git -C \"$SRCROOT\" rev-parse --short HEAD 2>/dev/null || echo \"dev\")\n/usr/libexec/PlistBuddy -c \"Set :GitCommitHash $hash\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :GitCommitHash string $hash\" \"$SRCROOT/Harbor/Info.plist\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $MARKETING_VERSION\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :CFBundleShortVersionString string $MARKETING_VERSION\" \"$SRCROOT/Harbor/Info.plist\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleIconName AppIcon\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :CFBundleIconName string AppIcon\" \"$SRCROOT/Harbor/Info.plist\"\n";
+			shellScript = "hash=$(git -C \"$SRCROOT\" rev-parse --short HEAD 2>/dev/null || echo \"dev\")\n/usr/libexec/PlistBuddy -c \"Set :GitCommitHash $hash\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :GitCommitHash string $hash\" \"$SRCROOT/Harbor/Info.plist\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $MARKETING_VERSION\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :CFBundleShortVersionString string $MARKETING_VERSION\" \"$SRCROOT/Harbor/Info.plist\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleIconFile AppIcon\" \"$SRCROOT/Harbor/Info.plist\" 2>/dev/null || \\\n/usr/libexec/PlistBuddy -c \"Add :CFBundleIconFile string AppIcon\" \"$SRCROOT/Harbor/Info.plist\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
