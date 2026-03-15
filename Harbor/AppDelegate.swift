@@ -26,6 +26,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func checkForUpdates() {
+        updateStatus = .checking
+        rebuildMenu()
         Task {
             let status = await UpdateChecker.check()
             updateStatus = status
@@ -92,10 +94,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Update / version row
         let updateItem = NSMenuItem()
-        updateItem.target = self
         switch updateStatus {
         case .available(let version, _):
             updateItem.title = "Update available (v\(version))"
+            updateItem.target = self
             updateItem.action = #selector(performUpdate)
         case .downloading(let progress):
             updateItem.title = "Downloading update... \(Int(progress * 100))%"
@@ -105,9 +107,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             updateItem.isEnabled = false
         case .failed:
             updateItem.title = "Update failed — Retry"
+            updateItem.target = self
             updateItem.action = #selector(performUpdate)
+        case .checking:
+            updateItem.title = "Checking for updates..."
+            updateItem.isEnabled = false
         default:
             updateItem.title = "Check for updates"
+            updateItem.target = self
             updateItem.action = #selector(checkForUpdatesAction)
         }
         menu.addItem(updateItem)
@@ -143,7 +150,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return item
     }
 
-    @objc private func checkForUpdatesAction() { checkForUpdates() }
+    @objc private func checkForUpdatesAction(_ sender: NSMenuItem) {
+        sender.title = "Checking for updates..."
+        sender.action = nil
+        Task {
+            let status = await UpdateChecker.check()
+            updateStatus = status
+            if case .upToDate = status {
+                sender.title = "Up to date"
+                try? await Task.sleep(for: .seconds(2))
+            }
+            rebuildMenu()
+        }
+    }
 
     @objc private func toggleShowAllPorts() {
         showAllPorts.toggle()
