@@ -56,6 +56,14 @@ class AboutWindow {
         descLabel.frame = NSRect(x: 0, y: h - 148, width: w, height: 16)
         content.addSubview(descLabel)
 
+        // Author
+        let authorLabel = NSTextField(labelWithString: "Made by Erik Ehnsio")
+        authorLabel.font = .systemFont(ofSize: 11)
+        authorLabel.textColor = .tertiaryLabelColor
+        authorLabel.alignment = .center
+        authorLabel.frame = NSRect(x: 0, y: h - 166, width: w, height: 16)
+        content.addSubview(authorLabel)
+
         // Buttons
         let buttonWidth: CGFloat = 110
         let buttonGap: CGFloat = 10
