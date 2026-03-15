@@ -27,19 +27,22 @@ When juggling multiple dev servers (Next.js, Vite, Astro, Django, etc.), it's ea
 
 ## Install
 
-```bash
-# Prerequisites
-brew install xcodegen
+### Download
 
-# Build and install
+Grab the latest `Harbor.app.zip` from [Releases](https://github.com/eehnsio/Harbor/releases), unzip, and drag to `/Applications`.
+
+> On first launch, right-click → Open to bypass Gatekeeper (the app is not notarized).
+
+### Build from source
+
+```bash
+brew install xcodegen
 git clone https://github.com/eehnsio/Harbor.git
 cd Harbor
 xcodegen generate
 xcodebuild -project Harbor.xcodeproj -scheme Harbor -configuration Release build -quiet
 cp -R ~/Library/Developer/Xcode/DerivedData/Harbor-*/Build/Products/Release/Harbor.app /Applications/
 ```
-
-Then open Harbor from `/Applications`. It appears in the menu bar — no Dock icon.
 
 ## Requirements
 
