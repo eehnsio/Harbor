@@ -220,19 +220,6 @@ class PortMenuItemView: NSView {
         let leftPad: CGFloat = 20
         let killSize: CGFloat = 18
 
-        // Kill button (right edge, hidden until hover)
-        killButton.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Kill")?
-            .withSymbolConfiguration(.init(pointSize: 12, weight: .medium))
-        killButton.bezelStyle = .inline
-        killButton.isBordered = false
-        killButton.imagePosition = .imageOnly
-        killButton.contentTintColor = .secondaryLabelColor
-        killButton.frame = NSRect(x: width - rightPad - killSize, y: 2, width: killSize, height: killSize)
-        killButton.target = self
-        killButton.action = #selector(killClicked)
-        killButton.isHidden = true
-        addSubview(killButton)
-
         // Memory (right-aligned)
         let memWidth: CGFloat = 50
         memoryLabel.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
@@ -249,6 +236,19 @@ class PortMenuItemView: NSView {
         uptimeLabel.alignment = .right
         uptimeLabel.frame = NSRect(x: uptimeX, y: 3, width: uptimeWidth, height: 16)
         addSubview(uptimeLabel)
+
+        // Kill button (replaces uptime on hover)
+        killButton.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Kill")?
+            .withSymbolConfiguration(.init(pointSize: 12, weight: .medium))
+        killButton.bezelStyle = .inline
+        killButton.isBordered = false
+        killButton.imagePosition = .imageOnly
+        killButton.contentTintColor = .secondaryLabelColor
+        killButton.frame = NSRect(x: uptimeX + (uptimeWidth - killSize) / 2, y: 2, width: killSize, height: killSize)
+        killButton.target = self
+        killButton.action = #selector(killClicked)
+        killButton.isHidden = true
+        addSubview(killButton)
 
         // Port number — right-aligned within shared column width
         portLabel.font = .monospacedDigitSystemFont(ofSize: 13, weight: .medium)
@@ -284,9 +284,9 @@ class PortMenuItemView: NSView {
         killButton.isHidden = false
         killButton.contentTintColor = .white
         uptimeLabel.isHidden = true
-        memoryLabel.isHidden = true
         portLabel.textColor = .white
         nameLabel.textColor = .white
+        memoryLabel.textColor = .white
     }
 
     override func mouseExited(with event: NSEvent) {
@@ -294,11 +294,10 @@ class PortMenuItemView: NSView {
         needsDisplay = true
         killButton.isHidden = true
         uptimeLabel.isHidden = false
-        memoryLabel.isHidden = false
         portLabel.textColor = .labelColor
         nameLabel.textColor = .labelColor
-        uptimeLabel.textColor = .tertiaryLabelColor
         memoryLabel.textColor = .tertiaryLabelColor
+        uptimeLabel.textColor = .tertiaryLabelColor
     }
 
     override func mouseUp(with event: NSEvent) {
