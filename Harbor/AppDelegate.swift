@@ -10,7 +10,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "network", accessibilityDescription: "Harbor")
+        if let icon = Bundle.main.image(forResource: "harbor-menubar") {
+            icon.size = NSSize(width: 18, height: 18)
+            icon.isTemplate = true
+            statusItem.button?.image = icon
+        }
 
         refreshAndRebuild()
 

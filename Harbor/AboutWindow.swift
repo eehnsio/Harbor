@@ -11,7 +11,7 @@ class AboutWindow {
         }
 
         let w: CGFloat = 280
-        let h: CGFloat = 220
+        let h: CGFloat = 155
 
         let window = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: w, height: h),
@@ -26,17 +26,11 @@ class AboutWindow {
 
         let content = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
 
-        // App icon — use NSWorkspace to get the icon for this app bundle
-        let iconView = NSImageView(frame: NSRect(x: (w - 64) / 2, y: h - 80, width: 64, height: 64))
-        iconView.image = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
-        iconView.image?.size = NSSize(width: 64, height: 64)
-        content.addSubview(iconView)
-
         // App name
         let nameLabel = NSTextField(labelWithString: "Harbor")
         nameLabel.font = .systemFont(ofSize: 18, weight: .semibold)
         nameLabel.alignment = .center
-        nameLabel.frame = NSRect(x: 0, y: h - 105, width: w, height: 22)
+        nameLabel.frame = NSRect(x: 0, y: h - 40, width: w, height: 22)
         content.addSubview(nameLabel)
 
         // Version
@@ -46,7 +40,7 @@ class AboutWindow {
         versionLabel.font = .systemFont(ofSize: 11)
         versionLabel.textColor = .secondaryLabelColor
         versionLabel.alignment = .center
-        versionLabel.frame = NSRect(x: 0, y: h - 125, width: w, height: 16)
+        versionLabel.frame = NSRect(x: 0, y: h - 60, width: w, height: 16)
         content.addSubview(versionLabel)
 
         // Description
@@ -54,7 +48,7 @@ class AboutWindow {
         descLabel.font = .systemFont(ofSize: 12)
         descLabel.textColor = .secondaryLabelColor
         descLabel.alignment = .center
-        descLabel.frame = NSRect(x: 0, y: h - 148, width: w, height: 16)
+        descLabel.frame = NSRect(x: 0, y: h - 80, width: w, height: 16)
         content.addSubview(descLabel)
 
         // Author
@@ -62,7 +56,7 @@ class AboutWindow {
         authorLabel.font = .systemFont(ofSize: 11)
         authorLabel.textColor = .tertiaryLabelColor
         authorLabel.alignment = .center
-        authorLabel.frame = NSRect(x: 0, y: h - 166, width: w, height: 16)
+        authorLabel.frame = NSRect(x: 0, y: h - 98, width: w, height: 16)
         content.addSubview(authorLabel)
 
         // Buttons
@@ -73,7 +67,7 @@ class AboutWindow {
 
         let ghButton = IconLinkButton(
             title: " GitHub",
-            symbolName: "chevron.left.forwardslash.chevron.right",
+            bundleImage: "github-mark",
             url: "https://github.com/eehnsio/Harbor"
         )
         ghButton.frame = NSRect(x: startX, y: 18, width: buttonWidth, height: 28)

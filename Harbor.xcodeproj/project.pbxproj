@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		0DAD1F469B464FC5F0748727 /* PortViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210E990DE11BD080A44F302E /* PortViewModel.swift */; };
 		18C7F48DB9003DA2CA664ABB /* PortScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76FC86455574C255CD59EB4D /* PortScanner.swift */; };
+		3B386E07CACB04C020E538BC /* github-mark.png in Resources */ = {isa = PBXBuildFile; fileRef = E39DAB38417814D403561925 /* github-mark.png */; };
+		6D23F4AE6B0F517A30F916E5 /* harbor-menubar.png in Resources */ = {isa = PBXBuildFile; fileRef = 741F9483039540A2D5ABF6CE /* harbor-menubar.png */; };
 		715892FD03195A31C97B37FF /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82E49A603F482EAFD59446A /* UpdateChecker.swift */; };
 		72C032721F55E75E69FB04C8 /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFC11E5BFA545149ECA14F2 /* Formatters.swift */; };
 		7AC9064480B05C96743445F3 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 34AC0739DC5227CA0205377E /* AppIcon.icns */; };
@@ -30,11 +32,13 @@
 		38799E22E8C2BA260619954C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5AF8C8FE995179322875457E /* ProcessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessManager.swift; sourceTree = "<group>"; };
 		6A91A48A4F7B7C2857B740C0 /* AppUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdater.swift; sourceTree = "<group>"; };
+		741F9483039540A2D5ABF6CE /* harbor-menubar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "harbor-menubar.png"; sourceTree = "<group>"; };
 		76FC86455574C255CD59EB4D /* PortScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortScanner.swift; sourceTree = "<group>"; };
 		9056FE4E7096E4BF7EAE89C1 /* Harbor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Harbor.entitlements; sourceTree = "<group>"; };
 		99DA7063445906ED225ACC58 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9CCD663F58E56FDD12726843 /* ListeningPort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListeningPort.swift; sourceTree = "<group>"; };
 		AFFC11E5BFA545149ECA14F2 /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
+		E39DAB38417814D403561925 /* github-mark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "github-mark.png"; sourceTree = "<group>"; };
 		E82E49A603F482EAFD59446A /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		EF8262DF41C8FD21E61BED0A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F4A098FA2BAEE5F46EA2760B /* Harbor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Harbor.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -89,6 +93,7 @@
 				29F9AAE05882F9789CEA451C /* HarborApp.swift */,
 				38799E22E8C2BA260619954C /* Info.plist */,
 				3883A0FF29A211781EAE09BC /* Models */,
+				FC114163C5EAD254CEF4EE41 /* Resources */,
 				70E15C21A2CB1D087F67352C /* Services */,
 				C23C629F6445976918C93D0B /* Utilities */,
 				852C77DA8CFD2846FFAF9792 /* ViewModels */,
@@ -110,6 +115,15 @@
 				F4A098FA2BAEE5F46EA2760B /* Harbor.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		FC114163C5EAD254CEF4EE41 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E39DAB38417814D403561925 /* github-mark.png */,
+				741F9483039540A2D5ABF6CE /* harbor-menubar.png */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -174,6 +188,8 @@
 			files = (
 				7AC9064480B05C96743445F3 /* AppIcon.icns in Resources */,
 				F0E0DF0F9F4AA7B71CBF19E9 /* Assets.xcassets in Resources */,
+				3B386E07CACB04C020E538BC /* github-mark.png in Resources */,
+				6D23F4AE6B0F517A30F916E5 /* harbor-menubar.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
