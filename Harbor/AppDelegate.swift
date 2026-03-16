@@ -282,11 +282,8 @@ class PortMenuItemView: NSView {
         isHighlighted = true
         needsDisplay = true
         killButton.isHidden = false
-        killButton.contentTintColor = .white
         uptimeLabel.isHidden = true
         memoryLabel.isHidden = true
-        portLabel.textColor = .white
-        nameLabel.textColor = .white
     }
 
     override func mouseExited(with event: NSEvent) {
@@ -295,10 +292,6 @@ class PortMenuItemView: NSView {
         killButton.isHidden = true
         uptimeLabel.isHidden = false
         memoryLabel.isHidden = false
-        portLabel.textColor = .labelColor
-        nameLabel.textColor = .labelColor
-        uptimeLabel.textColor = .tertiaryLabelColor
-        memoryLabel.textColor = .tertiaryLabelColor
     }
 
     override func mouseUp(with event: NSEvent) {
@@ -308,7 +301,7 @@ class PortMenuItemView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         if isHighlighted {
-            NSColor.selectedContentBackgroundColor.setFill()
+            NSColor.white.withAlphaComponent(0.1).setFill()
             NSBezierPath(roundedRect: bounds.insetBy(dx: 5, dy: 0), xRadius: 4, yRadius: 4).fill()
         }
     }
