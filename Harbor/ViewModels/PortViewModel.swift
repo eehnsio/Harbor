@@ -35,4 +35,11 @@ class PortViewModel {
             _ = ProcessManager.terminateWithPrivileges(pid: port.pid)
         }
     }
+
+    func forceKillProcess(_ port: ListeningPort) {
+        let result = ProcessManager.forceKill(pid: port.pid)
+        if case .needsEscalation = result {
+            _ = ProcessManager.forceKillWithPrivileges(pid: port.pid)
+        }
+    }
 }

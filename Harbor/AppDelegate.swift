@@ -1,10 +1,10 @@
 import AppKit
+import ServiceManagement
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private let viewModel = PortViewModel()
-    private let menuWidth: CGFloat = 290
     private var showAllPorts = false
     private var updateStatus: UpdateStatus = .idle
 
@@ -44,15 +44,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func rebuildMenu() {
         let menu = NSMenu()
-        menu.minimumWidth = menuWidth
         let devPorts = viewModel.ports.filter { $0.isDevPort }
-
-        // Compute max port label width so all columns align
-        let portFont = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .medium)
-        let maxPortWidth = devPorts.reduce(CGFloat(0)) { maxW, p in
-            let w = (String(p.port) as NSString).size(withAttributes: [.font: portFont]).width
-            return max(maxW, w)
-        }
 
         if devPorts.isEmpty {
             let item = NSMenuItem(title: "No dev ports", action: nil, keyEquivalent: "")
@@ -62,7 +54,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let grouped = Dictionary(grouping: devPorts) { port in
                 port.projectName.isEmpty ? port.displayName : port.projectName
             }
-            // Preserve order by first port number in each group
             let sortedGroups = grouped.sorted { $0.value[0].port < $1.value[0].port }
 
             for (index, (project, ports)) in sortedGroups.enumerated() {
@@ -78,7 +69,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 menu.addItem(header)
 
                 for port in ports {
-                    menu.addItem(makePortItem(port: port, portColumnWidth: maxPortWidth))
+                    menu.addItem(makePortItem(port: port))
                 }
 
                 if index < sortedGroups.count - 1 {
@@ -93,6 +84,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         showAllItem.target = self
         showAllItem.state = showAllPorts ? .on : .off
         menu.addItem(showAllItem)
+
+        let launchAtLoginItem = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        launchAtLoginItem.target = self
+        launchAtLoginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
+        menu.addItem(launchAtLoginItem)
 
         // Only show update item when an update is available or in progress
         switch updateStatus {
@@ -123,28 +119,83 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.menu = menu
     }
 
-    private func makePortItem(port: ListeningPort, portColumnWidth: CGFloat) -> NSMenuItem {
-        let item = NSMenuItem()
-        item.representedObject = port.pid
-        item.view = PortMenuItemView(
-            port: String(port.port),
-            portColumnWidth: portColumnWidth,
-            name: port.shortName,
-            memory: Formatters.memory(port.physicalMemory),
-            uptime: Formatters.uptime(port.uptime),
-            width: menuWidth,
-            onClick: {
-                let url = URL(string: "http://localhost:\(port.port)")!
-                NSWorkspace.shared.open(url)
-            },
-            onKill: { [weak self] in
-                self?.viewModel.killProcess(port)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self?.refreshAndRebuild()
-                }
-            }
+    private func makePortItem(port: ListeningPort) -> NSMenuItem {
+        let title = "\(port.port) · \(port.shortName)"
+        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+
+        let submenu = NSMenu()
+
+        // PID info (disabled, just for display)
+        let pidItem = NSMenuItem(title: "PID \(port.pid)", action: nil, keyEquivalent: "")
+        pidItem.isEnabled = false
+        submenu.addItem(pidItem)
+
+        // Uptime & memory info
+        let infoItem = NSMenuItem(
+            title: "\(Formatters.uptime(port.uptime))  ·  \(Formatters.memory(port.physicalMemory))",
+            action: nil, keyEquivalent: ""
         )
+        infoItem.isEnabled = false
+        submenu.addItem(infoItem)
+
+        submenu.addItem(.separator())
+
+        // Copy URL
+        let copyItem = NSMenuItem(title: "Copy URL", action: #selector(copyURL(_:)), keyEquivalent: "")
+        copyItem.target = self
+        copyItem.representedObject = port
+        submenu.addItem(copyItem)
+
+        // Open in Browser
+        let openItem = NSMenuItem(title: "Open in Browser", action: #selector(openInBrowser(_:)), keyEquivalent: "")
+        openItem.target = self
+        openItem.representedObject = port
+        submenu.addItem(openItem)
+
+        submenu.addItem(.separator())
+
+        // Terminate Process
+        let terminateItem = NSMenuItem(title: "Terminate Process", action: #selector(terminateProcess(_:)), keyEquivalent: "")
+        terminateItem.target = self
+        terminateItem.representedObject = port
+        submenu.addItem(terminateItem)
+
+        // Force Kill Process
+        let forceKillItem = NSMenuItem(title: "Force Kill Process", action: #selector(forceKillProcess(_:)), keyEquivalent: "")
+        forceKillItem.target = self
+        forceKillItem.representedObject = port
+        submenu.addItem(forceKillItem)
+
+        item.submenu = submenu
         return item
+    }
+
+    @objc private func copyURL(_ sender: NSMenuItem) {
+        guard let port = sender.representedObject as? ListeningPort else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString("http://localhost:\(port.port)", forType: .string)
+    }
+
+    @objc private func openInBrowser(_ sender: NSMenuItem) {
+        guard let port = sender.representedObject as? ListeningPort else { return }
+        let url = URL(string: "http://localhost:\(port.port)")!
+        NSWorkspace.shared.open(url)
+    }
+
+    @objc private func terminateProcess(_ sender: NSMenuItem) {
+        guard let port = sender.representedObject as? ListeningPort else { return }
+        viewModel.killProcess(port)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.refreshAndRebuild()
+        }
+    }
+
+    @objc private func forceKillProcess(_ sender: NSMenuItem) {
+        guard let port = sender.representedObject as? ListeningPort else { return }
+        viewModel.forceKillProcess(port)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.refreshAndRebuild()
+        }
     }
 
     @objc private func showAbout() { AboutWindow.show() }
@@ -152,6 +203,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func toggleShowAllPorts() {
         showAllPorts.toggle()
         refreshAndRebuild()
+    }
+
+    @objc private func toggleLaunchAtLogin() {
+        do {
+            if SMAppService.mainApp.status == .enabled {
+                try SMAppService.mainApp.unregister()
+            } else {
+                try SMAppService.mainApp.register()
+            }
+        } catch {
+            NSLog("Failed to toggle launch at login: \(error)")
+        }
+        rebuildMenu()
     }
 
     @objc private func performUpdate() {
@@ -181,129 +245,4 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func quitAction() { NSApplication.shared.terminate(nil) }
 }
 
-// MARK: - Custom menu item view
-
-class PortMenuItemView: NSView {
-    private var trackingArea: NSTrackingArea?
-    private var isHighlighted = false
-    private let onClick: () -> Void
-    private let onKill: () -> Void
-
-    private let portLabel: NSTextField
-    private let nameLabel: NSTextField
-    private let memoryLabel: NSTextField
-    private let uptimeLabel: NSTextField
-    private let killButton: NSButton
-
-    private let rightPad: CGFloat = 14
-
-    private let portColumnWidth: CGFloat
-
-    init(port: String, portColumnWidth: CGFloat = 40, name: String, memory: String, uptime: String, width: CGFloat,
-         onClick: @escaping () -> Void = {}, onKill: @escaping () -> Void) {
-        self.portColumnWidth = portColumnWidth
-        self.onClick = onClick
-        self.onKill = onKill
-        portLabel = NSTextField(labelWithString: port)
-        nameLabel = NSTextField(labelWithString: name)
-        memoryLabel = NSTextField(labelWithString: memory)
-        uptimeLabel = NSTextField(labelWithString: uptime)
-        killButton = NSButton()
-
-        super.init(frame: NSRect(x: 0, y: 0, width: width, height: 22))
-        setupViews(width: width)
-    }
-
-    required init?(coder: NSCoder) { fatalError() }
-
-    private func setupViews(width: CGFloat) {
-        let leftPad: CGFloat = 20
-        let killSize: CGFloat = 18
-
-        // Kill button (right edge, hidden until hover)
-        killButton.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Kill")?
-            .withSymbolConfiguration(.init(pointSize: 12, weight: .medium))
-        killButton.bezelStyle = .inline
-        killButton.isBordered = false
-        killButton.imagePosition = .imageOnly
-        killButton.contentTintColor = .secondaryLabelColor
-        killButton.frame = NSRect(x: width - rightPad - killSize, y: 2, width: killSize, height: killSize)
-        killButton.target = self
-        killButton.action = #selector(killClicked)
-        killButton.isHidden = true
-        addSubview(killButton)
-
-        // Memory (right-aligned)
-        let memWidth: CGFloat = 50
-        memoryLabel.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
-        memoryLabel.textColor = .tertiaryLabelColor
-        memoryLabel.alignment = .right
-        memoryLabel.frame = NSRect(x: width - rightPad - memWidth, y: 3, width: memWidth, height: 16)
-        addSubview(memoryLabel)
-
-        // Uptime
-        let uptimeWidth: CGFloat = 50
-        let uptimeX = memoryLabel.frame.minX - uptimeWidth - 4
-        uptimeLabel.font = .systemFont(ofSize: 11)
-        uptimeLabel.textColor = .tertiaryLabelColor
-        uptimeLabel.alignment = .right
-        uptimeLabel.frame = NSRect(x: uptimeX, y: 3, width: uptimeWidth, height: 16)
-        addSubview(uptimeLabel)
-
-        // Port number — right-aligned within shared column width
-        portLabel.font = .monospacedDigitSystemFont(ofSize: 13, weight: .medium)
-        portLabel.textColor = .labelColor
-        portLabel.alignment = .right
-        portLabel.frame = NSRect(x: leftPad, y: 2, width: portColumnWidth, height: 18)
-        addSubview(portLabel)
-
-        // Name — fixed start position based on shared column width
-        let nameX = leftPad + portColumnWidth + 8
-        nameLabel.font = .systemFont(ofSize: 13)
-        nameLabel.textColor = .labelColor
-        nameLabel.lineBreakMode = .byTruncatingTail
-        nameLabel.frame = NSRect(x: nameX, y: 2, width: uptimeX - nameX - 4, height: 18)
-        addSubview(nameLabel)
-    }
-
-    @objc private func killClicked() {
-        enclosingMenuItem?.menu?.cancelTracking()
-        onKill()
-    }
-
-    override func updateTrackingAreas() {
-        super.updateTrackingAreas()
-        if let existing = trackingArea { removeTrackingArea(existing) }
-        trackingArea = NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self)
-        addTrackingArea(trackingArea!)
-    }
-
-    override func mouseEntered(with event: NSEvent) {
-        isHighlighted = true
-        needsDisplay = true
-        killButton.isHidden = false
-        uptimeLabel.isHidden = true
-        memoryLabel.isHidden = true
-    }
-
-    override func mouseExited(with event: NSEvent) {
-        isHighlighted = false
-        needsDisplay = true
-        killButton.isHidden = true
-        uptimeLabel.isHidden = false
-        memoryLabel.isHidden = false
-    }
-
-    override func mouseUp(with event: NSEvent) {
-        enclosingMenuItem?.menu?.cancelTracking()
-        onClick()
-    }
-
-    override func draw(_ dirtyRect: NSRect) {
-        if isHighlighted {
-            NSColor.white.withAlphaComponent(0.1).setFill()
-            NSBezierPath(roundedRect: bounds.insetBy(dx: 5, dy: 0), xRadius: 4, yRadius: 4).fill()
-        }
-    }
-}
 
