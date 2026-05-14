@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.0] - 2026-05-14
+
+### Added
+
+- Per-process submenu with Copy URL, Open in Browser, Terminate, and Force Kill actions
+- Launch at Login toggle
+- Auto-update via GitHub Releases (in-place check without closing the menu)
+- About Harbor window with version info and GitHub/support links
+- Custom menu bar icon and pier-themed app icon
+
+### Changed
+
+- Subtle gray hover highlight instead of system blue selection color
+
 ## [1.0.0] - 2025-03-15
 
 ### Added

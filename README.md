@@ -1,5 +1,6 @@
 # Harbor
 
+[![Latest release](https://img.shields.io/github/v/release/eehnsio/Harbor?color=brightgreen)](https://github.com/eehnsio/Harbor/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black.svg)](https://www.apple.com/macos/)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-yellow.svg)](https://buymeacoffee.com/eehnsio)
@@ -18,12 +19,16 @@ When juggling multiple dev servers (Next.js, Vite, Astro, Django, etc.), it's ea
 - Groups ports by project folder (resolved from process working directory)
 - Resolves friendly names from command-line args (e.g. `node` -> "next dev", "astro dev")
 - Shows uptime and memory usage per process
-- Kill button on hover — terminates with SIGTERM
+- Per-process submenu: Copy URL, Open in Browser, Terminate, Force Kill
 - Click a port to open `http://localhost:<port>` in your browser
 - Smart filtering: hides debug ports and ephemeral ports by default
 - "Show All Ports" toggle to reveal everything
+- Launch at Login toggle
+- Auto-update via GitHub Releases
+- About window with version, GitHub, and support links
+- Custom menu bar icon, no Dock icon
 - Auto-refreshes every 5 seconds
-- ~500 KB, zero dependencies, no Dock icon
+- ~500 KB, zero dependencies
 
 ## Install
 
@@ -35,14 +40,7 @@ Grab the latest `Harbor.app.zip` from [Releases](https://github.com/eehnsio/Harb
 
 ### Build from source
 
-```bash
-brew install xcodegen
-git clone https://github.com/eehnsio/Harbor.git
-cd Harbor
-xcodegen generate
-xcodebuild -project Harbor.xcodeproj -scheme Harbor -configuration Release build -quiet
-cp -R ~/Library/Developer/Xcode/DerivedData/Harbor-*/Build/Products/Release/Harbor.app /Applications/
-```
+Requires Xcode 16+ and `xcodegen` (`brew install xcodegen`). Then `xcodegen generate && xcodebuild -scheme Harbor -configuration Release build`.
 
 ## Requirements
 
