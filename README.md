@@ -17,17 +17,19 @@ When juggling multiple dev servers (Next.js, Vite, Astro, Django, etc.), it's ea
 
 - Detects listening TCP ports via native `libproc` APIs (no `lsof` subprocess)
 - Groups ports by project folder (resolved from process working directory)
-- Resolves friendly names from command-line args (e.g. `node` -> "next dev", "astro dev")
+- Resolves friendly names from command-line args (e.g. `node` -> "next dev", "astro dev", "wrangler")
+- Names Docker ports after their container and compose project (e.g. "db (postgres)")
+- Marks servers left running without a terminal, and shows which app started each one
 - Shows uptime and memory usage per process
 - Per-process submenu: Copy URL, Open in Browser, Terminate, Force Kill
 - Click a port to open `http://localhost:<port>` in your browser
 - Smart filtering: hides debug ports and ephemeral ports by default
 - "Show All Ports" toggle to reveal everything
 - Launch at Login toggle
-- Auto-update via GitHub Releases
+- Auto-update via GitHub Releases (only installs updates signed by the developer)
 - About window with version, GitHub, and support links
 - Custom menu bar icon, no Dock icon
-- Auto-refreshes every 5 seconds
+- Scans when the menu opens — no background polling
 - ~500 KB, zero dependencies
 
 ## Install
@@ -36,7 +38,7 @@ When juggling multiple dev servers (Next.js, Vite, Astro, Django, etc.), it's ea
 
 Grab the latest `Harbor.app.zip` from [Releases](https://github.com/eehnsio/Harbor/releases), unzip, and drag to `/Applications`.
 
-> On first launch, right-click → Open to bypass Gatekeeper (the app is not notarized).
+Harbor is signed with Developer ID and notarized by Apple, so it opens without Gatekeeper warnings.
 
 ### Build from source
 
