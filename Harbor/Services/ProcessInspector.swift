@@ -10,6 +10,10 @@ struct ProcessDetails {
     let memory: UInt64
     let uid: uid_t
     let isDockerProxy: Bool
+    /// App the process was started from (e.g. "Ghostty", "Claude", "Code"), via the parent chain
+    let parentApp: String?
+    /// No app or terminal multiplexer up the parent chain — usually a dev server left behind by a closed terminal
+    let isOrphaned: Bool
 }
 
 enum ProcessInspector {
@@ -23,6 +27,8 @@ enum ProcessInspector {
         let args = getCommandLineArgs(pid: pid)
         let isDocker = name == "com.docker.backend" || name == "docker-proxy" || name == "vpnkit-bridge"
 
+        let ppid = pid_t(bsdInfo?.pbi_ppid ?? 0)
+        let origin = isDocker ? (app: nil, detached: false) : findOrigin(ppid: ppid)
         let startTime = TimeInterval(bsdInfo?.pbi_start_tvsec ?? 0)
         let uptime = startTime > 0 ? Date().timeIntervalSince1970 - startTime : 0
 
@@ -34,8 +40,45 @@ enum ProcessInspector {
             uptime: uptime,
             memory: memory,
             uid: bsdInfo?.pbi_uid ?? 0,
-            isDockerProxy: isDocker
+            isDockerProxy: isDocker,
+            parentApp: origin.app,
+            isOrphaned: origin.detached
         )
+    }
+
+    // MARK: - Parent chain
+
+    /// Ancestors that keep a session alive even though their own parent is launchd.
+    private static let sessionHosts: Set<String> = ["tmux", "screen", "zellij", "sshd", "login", "mosh-server"]
+
+    /// Walk up the parent chain. The outermost ancestor inside an .app bundle is the origin
+    /// ("Ghostty", "Claude", "Visual Studio Code") — apps nest helper bundles, so keep walking.
+    /// Reaching launchd without one means the terminal that started it is gone — unless the
+    /// top of the chain is a multiplexer or ssh session.
+    private static func findOrigin(ppid: pid_t) -> (app: String?, detached: Bool) {
+        var current = ppid
+        var topmost: pid_t?
+        var appPath: String?
+        for _ in 0..<32 where current > 1 {
+            let path = getProcessPath(pid: current)
+            if let range = path.range(of: ".app/") {
+                appPath = String(path[..<range.lowerBound]) + ".app"
+            }
+            guard let info = getBSDInfo(pid: current) else { break }
+            topmost = current
+            current = pid_t(info.pbi_ppid)
+        }
+        if let appPath { return (appDisplayName(appPath), false) }
+        guard current == 1 else { return (nil, false) }
+        guard let topmost else { return (nil, true) }  // Parent is launchd itself
+        return (nil, !sessionHosts.contains(getProcessName(pid: topmost)))
+    }
+
+    private static func appDisplayName(_ appPath: String) -> String {
+        let bundle = Bundle(path: appPath)
+        return bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? bundle?.object(forInfoDictionaryKey: "CFBundleName") as? String
+            ?? URL(fileURLWithPath: appPath).deletingPathExtension().lastPathComponent
     }
 
     // MARK: - Display name resolution
@@ -78,23 +121,31 @@ enum ProcessInspector {
         return nil
     }
 
+    /// Known CLI packages/binaries → display name. Matched exactly against the npm package
+    /// name or script basename, never as a substring of the full path.
+    private static let nodeFrameworks: [String: String] = [
+        "next": "next dev", "vite": "vite", "vitest": "vitest",
+        "nuxt": "nuxt dev", "nuxi": "nuxt dev", "astro": "astro dev",
+        "@remix-run/dev": "remix dev", "remix": "remix dev",
+        "webpack": "webpack", "webpack-dev-server": "webpack", "webpack-cli": "webpack",
+        "turbo": "turbo", "@nestjs/cli": "nest", "nest": "nest",
+        "fastify-cli": "fastify", "gatsby": "gatsby",
+        "storybook": "storybook", "@storybook/cli": "storybook",
+        "wrangler": "wrangler", "expo": "expo", "react-scripts": "react-scripts",
+    ]
+
     private static func resolveNodeName(runtime: String, args: [String]) -> String {
         let relevantArgs = args.dropFirst().filter { !$0.hasPrefix("-") }
 
-        // Map known framework paths to display names
-        let frameworks: [(pattern: String, name: String)] = [
-            ("next", "next dev"), ("vite", "vite"), ("vitest", "vitest"),
-            ("nuxt", "nuxt dev"), ("astro", "astro dev"), ("remix", "remix dev"),
-            ("webpack", "webpack"), ("turbo", "turbo"), ("nest", "nest"),
-            ("express", "express"), ("fastify", "fastify"),
-            ("svelte", "sveltekit"), ("gatsby", "gatsby"), ("storybook", "storybook"),
-        ]
-
         for arg in relevantArgs {
             let lower = arg.lowercased()
-            if let match = frameworks.first(where: { lower.contains($0.pattern) }) {
-                return match.name
-            }
+            let package = nodePackageName(in: lower)
+            let scriptName = URL(fileURLWithPath: lower).deletingPathExtension().lastPathComponent
+
+            if let package, let name = nodeFrameworks[package] { return name }
+            if let name = nodeFrameworks[scriptName] { return name }
+            // Script inside node_modules → the package is more telling than "cli.js"
+            if let package { return package }
             if lower.hasSuffix(".js") || lower.hasSuffix(".ts") || lower.hasSuffix(".mjs") || lower.hasSuffix(".cjs") {
                 return "\(runtime) \(URL(fileURLWithPath: arg).lastPathComponent)"
             }
@@ -107,6 +158,17 @@ enum ProcessInspector {
         return runtime
     }
 
+    /// ".../node_modules/wrangler/bin/cli.js" → "wrangler", ".../node_modules/@nestjs/cli/..." → "@nestjs/cli"
+    private static func nodePackageName(in path: String) -> String? {
+        guard let range = path.range(of: "/node_modules/", options: .backwards) else { return nil }
+        let parts = path[range.upperBound...].split(separator: "/")
+        guard let first = parts.first else { return nil }
+        if first.hasPrefix("@"), parts.count > 1 { return "\(first)/\(parts[1])" }
+        // ".bin/vite" is a symlink named after the binary
+        if first == ".bin", parts.count > 1 { return String(parts[1]) }
+        return String(first)
+    }
+
     private static func resolvePythonName(args: [String]) -> String {
         if let mIdx = args.firstIndex(of: "-m"), mIdx + 1 < args.count {
             let module = args[mIdx + 1]
@@ -115,12 +177,14 @@ enum ProcessInspector {
         }
         let relevantArgs = args.dropFirst().filter { !$0.hasPrefix("-") }
         for arg in relevantArgs {
-            let lower = arg.lowercased()
-            if lower.contains("manage.py") { return "django" }
-            if lower.contains("flask") { return "flask" }
-            if lower.contains("uvicorn") { return "uvicorn" }
-            if lower.contains("gunicorn") { return "gunicorn" }
-            if lower.hasSuffix(".py") { return "python \(URL(fileURLWithPath: arg).lastPathComponent)" }
+            // Match on basename only so a project folder named e.g. "flask-demo" isn't misread
+            let basename = URL(fileURLWithPath: arg).lastPathComponent
+            switch basename.lowercased() {
+            case "manage.py": return "django"
+            case "flask", "uvicorn", "gunicorn", "hypercorn", "daphne": return basename.lowercased()
+            default: break
+            }
+            if basename.lowercased().hasSuffix(".py") { return "python \(basename)" }
         }
         return "python"
     }

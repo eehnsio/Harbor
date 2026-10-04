@@ -2,8 +2,9 @@ import AppKit
 import ServiceManagement
 
 @MainActor
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
+    private let menu = NSMenu()
     private let viewModel = PortViewModel()
     private var showAllPorts = false
     private var updateStatus: UpdateStatus = .idle
@@ -16,11 +17,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusItem.button?.image = icon
         }
 
-        refreshAndRebuild()
-
-        Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.refreshAndRebuild() }
-        }
+        // Ports are scanned when the menu opens (menuNeedsUpdate) — nothing polls in the background
+        menu.delegate = self
+        statusItem.menu = menu
 
         // Check for updates on launch, then every hour
         checkForUpdates()
@@ -32,18 +31,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func checkForUpdates() {
         Task {
             let status = await UpdateChecker.check()
+            // A failed check (offline, rate limited) shouldn't hide an update we already found
+            if case .failed = status { return }
+            // Don't interrupt a download in progress
+            if case .downloading = updateStatus { return }
+            if updateStatus == .installing { return }
             updateStatus = status
             rebuildMenu()
         }
     }
 
-    private func refreshAndRebuild() {
+    func menuNeedsUpdate(_ menu: NSMenu) {
         viewModel.refresh(showAll: showAllPorts)
         rebuildMenu()
     }
 
     private func rebuildMenu() {
-        let menu = NSMenu()
+        menu.removeAllItems()
         let devPorts = viewModel.ports.filter { $0.isDevPort }
 
         if devPorts.isEmpty {
@@ -104,6 +108,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let item = NSMenuItem(title: "Installing...", action: nil, keyEquivalent: "")
             item.isEnabled = false
             menu.addItem(item)
+        case .failed(let message):
+            let item = NSMenuItem(title: "Update failed — Retry", action: #selector(performUpdate), keyEquivalent: "")
+            item.target = self
+            item.toolTip = message
+            menu.addItem(item)
         default:
             break
         }
@@ -115,13 +124,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let quitItem = NSMenuItem(title: "Quit Harbor", action: #selector(quitAction), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
-
-        statusItem.menu = menu
     }
 
     private func makePortItem(port: ListeningPort) -> NSMenuItem {
         let title = "\(port.port) · \(port.shortName)"
         let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        item.attributedTitle = portTitle(title, port: port)
+        if port.isOrphaned {
+            item.toolTip = "Detached — running without a terminal"
+        }
 
         let submenu = NSMenu()
 
@@ -130,13 +141,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         pidItem.isEnabled = false
         submenu.addItem(pidItem)
 
-        // Uptime & memory info
-        let infoItem = NSMenuItem(
-            title: "\(Formatters.uptime(port.uptime))  ·  \(Formatters.memory(port.physicalMemory))",
-            action: nil, keyEquivalent: ""
-        )
-        infoItem.isEnabled = false
-        submenu.addItem(infoItem)
+        // Uptime & memory info (Docker's backend process says nothing about the container)
+        if !port.isDockerProxy {
+            let infoItem = NSMenuItem(
+                title: "\(Formatters.uptime(port.uptime))  ·  \(Formatters.memory(port.physicalMemory))",
+                action: nil, keyEquivalent: ""
+            )
+            infoItem.isEnabled = false
+            submenu.addItem(infoItem)
+        }
+
+        // Where it was started from — helps tell apart sessions and spot leftovers
+        let originTitle: String? = if port.isOrphaned {
+            "Detached"
+        } else if let app = port.parentApp {
+            "Started from \(app)"
+        } else {
+            nil
+        }
+        if let originTitle {
+            let originItem = NSMenuItem(title: originTitle, action: nil, keyEquivalent: "")
+            originItem.isEnabled = false
+            submenu.addItem(originItem)
+        }
 
         submenu.addItem(.separator())
 
@@ -170,6 +197,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return item
     }
 
+    /// "4331 · astro dev", plus a small gray dot when the server runs without a terminal.
+    /// Uptime and the explanation live in the submenu so the menu stays narrow.
+    private func portTitle(_ title: String, port: ListeningPort) -> NSAttributedString {
+        let result = NSMutableAttributedString(string: title, attributes: [.font: NSFont.menuFont(ofSize: 0)])
+        guard port.isOrphaned else { return result }
+        result.append(NSAttributedString(string: "  ●", attributes: [
+            .font: NSFont.menuFont(ofSize: 8),
+            .foregroundColor: NSColor.tertiaryLabelColor,
+            .baselineOffset: 2,
+        ]))
+        return result
+    }
+
     @objc private func copyURL(_ sender: NSMenuItem) {
         guard let port = sender.representedObject as? ListeningPort else { return }
         NSPasteboard.general.clearContents()
@@ -185,24 +225,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func terminateProcess(_ sender: NSMenuItem) {
         guard let port = sender.representedObject as? ListeningPort else { return }
         viewModel.killProcess(port)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.refreshAndRebuild()
-        }
     }
 
     @objc private func forceKillProcess(_ sender: NSMenuItem) {
         guard let port = sender.representedObject as? ListeningPort else { return }
         viewModel.forceKillProcess(port)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.refreshAndRebuild()
-        }
     }
 
     @objc private func showAbout() { AboutWindow.show() }
 
     @objc private func toggleShowAllPorts() {
         showAllPorts.toggle()
-        refreshAndRebuild()
     }
 
     @objc private func toggleLaunchAtLogin() {
@@ -231,7 +264,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             do {
                 try await AppUpdater.update(from: url) { [weak self] progress in
                     Task { @MainActor in
-                        self?.updateStatus = .downloading(progress: progress)
+                        self?.updateStatus = progress >= 1 ? .installing : .downloading(progress: progress)
                         self?.rebuildMenu()
                     }
                 }

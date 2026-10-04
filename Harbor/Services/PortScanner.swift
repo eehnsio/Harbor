@@ -47,7 +47,7 @@ enum PortScanner {
         guard actualFdSize > 0 else { return [] }
 
         let actualFdCount = Int(actualFdSize) / MemoryLayout<proc_fdinfo>.size
-        var results: [ListeningPort] = []
+        var sockets: [(port: UInt16, address: String)] = []
 
         for j in 0..<actualFdCount {
             let fd = fds[j]
@@ -69,6 +69,8 @@ enum PortScanner {
             // Extract port (insi_lport is Int32 in network byte order)
             let rawPort = socketInfo.psi.soi_proto.pri_tcp.tcpsi_ini.insi_lport
             let port = UInt16(bigEndian: UInt16(truncatingIfNeeded: rawPort))
+            guard port > 0 else { continue }
+
             let address: String
             if family == AF_INET {
                 let addr = socketInfo.psi.soi_proto.pri_tcp.tcpsi_ini.insi_laddr.ina_46.i46a_addr4
@@ -77,14 +79,16 @@ enum PortScanner {
             } else {
                 address = "::"
             }
+            sockets.append((port, address))
+        }
 
-            guard port > 0 else { continue }
+        guard !sockets.isEmpty else { return [] }
 
-            let details = ProcessInspector.inspect(pid: pid)
-            let isCurrentUser = (details.uid == currentUID)
-
-            let listeningPort = ListeningPort(
-                port: port,
+        // Inspect once per process, not once per socket (IPv4 + IPv6 listeners share a PID)
+        let details = ProcessInspector.inspect(pid: pid)
+        return sockets.map { socket in
+            ListeningPort(
+                port: socket.port,
                 pid: pid,
                 processName: details.name,
                 displayName: details.displayName,
@@ -92,14 +96,13 @@ enum PortScanner {
                 workingDirectory: details.workingDirectory,
                 uptime: details.uptime,
                 physicalMemory: details.memory,
-                isCurrentUser: isCurrentUser,
-                localAddress: address,
-                isDockerProxy: details.isDockerProxy
+                isCurrentUser: details.uid == currentUID,
+                localAddress: socket.address,
+                isDockerProxy: details.isDockerProxy,
+                parentApp: details.parentApp,
+                isOrphaned: details.isOrphaned
             )
-            results.append(listeningPort)
         }
-
-        return results
     }
 
     private static func formatIPv4(_ addr: in_addr_t) -> String {
@@ -161,7 +164,9 @@ enum PortScanner {
                             physicalMemory: details.memory,
                             isCurrentUser: details.uid == currentUID,
                             localAddress: addr,
-                            isDockerProxy: details.isDockerProxy
+                            isDockerProxy: details.isDockerProxy,
+                            parentApp: details.parentApp,
+                            isOrphaned: details.isOrphaned
                         )
                         ports.append(port)
                     }

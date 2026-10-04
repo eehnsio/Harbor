@@ -5,7 +5,7 @@ struct ListeningPort: Identifiable, Hashable {
     let port: UInt16
     let pid: pid_t
     let processName: String
-    let displayName: String       // Friendly name: "next dev", "vite", "postgres", container name, etc.
+    var displayName: String       // Friendly name: "next dev", "vite", "postgres", container name, etc.
     let processPath: String
     let workingDirectory: String
     let uptime: TimeInterval
@@ -13,11 +13,14 @@ struct ListeningPort: Identifiable, Hashable {
     let isCurrentUser: Bool
     let localAddress: String
     let isDockerProxy: Bool
+    let parentApp: String?
+    let isOrphaned: Bool
 
     init(port: UInt16, pid: pid_t, processName: String, displayName: String? = nil,
          processPath: String = "", workingDirectory: String = "",
          uptime: TimeInterval = 0, physicalMemory: UInt64 = 0,
-         isCurrentUser: Bool = true, localAddress: String = "*", isDockerProxy: Bool = false) {
+         isCurrentUser: Bool = true, localAddress: String = "*", isDockerProxy: Bool = false,
+         parentApp: String? = nil, isOrphaned: Bool = false) {
         self.id = "\(pid):\(port)"
         self.port = port
         self.pid = pid
@@ -30,6 +33,8 @@ struct ListeningPort: Identifiable, Hashable {
         self.isCurrentUser = isCurrentUser
         self.localAddress = localAddress
         self.isDockerProxy = isDockerProxy
+        self.parentApp = parentApp
+        self.isOrphaned = isOrphaned
     }
 
     /// Project name extracted from displayName ("walle / vite" → "walle")
