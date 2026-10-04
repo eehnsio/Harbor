@@ -13,16 +13,16 @@ targets:
       - Harbor
       - path: Harbor/Resources
         buildPhase: resources
-    preBuildScripts:
+    postBuildScripts:
       - name: Embed Git Hash
+        # Writes into the built product (not the tracked Info.plist); runs before code signing
+        basedOnDependencyAnalysis: false
         script: |
           hash=$(git -C "$SRCROOT" rev-parse --short HEAD 2>/dev/null || echo "dev")
-          /usr/libexec/PlistBuddy -c "Set :GitCommitHash $hash" "$SRCROOT/Harbor/Info.plist" 2>/dev/null || \
-          /usr/libexec/PlistBuddy -c "Add :GitCommitHash string $hash" "$SRCROOT/Harbor/Info.plist"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$SRCROOT/Harbor/Info.plist" 2>/dev/null || \
-          /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string $MARKETING_VERSION" "$SRCROOT/Harbor/Info.plist"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleIconFile AppIcon" "$SRCROOT/Harbor/Info.plist" 2>/dev/null || \
-          /usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string AppIcon" "$SRCROOT/Harbor/Info.plist"
+          if [ -n "$(git -C "$SRCROOT" status --porcelain 2>/dev/null)" ]; then hash="$hash-dirty"; fi
+          plist="$TARGET_BUILD_DIR/$INFOPLIST_PATH"
+          /usr/libexec/PlistBuddy -c "Set :GitCommitHash $hash" "$plist" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Add :GitCommitHash string $hash" "$plist"
     settings:
       base:
         INFOPLIST_FILE: Harbor/Info.plist
@@ -33,6 +33,17 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.9"
         MACOSX_DEPLOYMENT_TARGET: "14.0"
-        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: 735SV765PC
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         COMBINE_HIDPI_IMAGES: YES
+      configs:
+        Debug:
+          CODE_SIGN_STYLE: Automatic
+          CODE_SIGN_IDENTITY: "Apple Development"
+        Release:
+          # Distributed outside the App Store → Developer ID + notarization
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Developer ID Application"
+          OTHER_CODE_SIGN_FLAGS: "--timestamp"

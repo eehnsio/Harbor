@@ -1,6 +1,10 @@
 import AppKit
+import Security
 
 enum AppUpdater {
+
+    /// Apple Developer Team ID that signs official Harbor releases.
+    static let teamID = "735SV765PC"
 
     /// Download, extract, replace, and relaunch the app.
     static func update(from zipURL: URL, onProgress: @escaping (Double) -> Void) async throws {
@@ -26,14 +30,17 @@ enum AppUpdater {
             throw UpdateError.extractionFailed
         }
 
-        // 3. Clear quarantine
+        // 3. Refuse anything not signed with our Developer ID
+        try verifySignature(of: extractedApp)
+
+        // 4. Clear quarantine
         let xattr = Process()
         xattr.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
         xattr.arguments = ["-cr", extractedApp.path]
         try? xattr.run()
         xattr.waitUntilExit()
 
-        // 4. Replace /Applications/Harbor.app
+        // 5. Replace /Applications/Harbor.app
         let appPath = "/Applications/Harbor.app"
         let backupPath = "/Applications/Harbor.app.old"
 
@@ -49,11 +56,36 @@ enum AppUpdater {
             try replaceWithPrivileges(extractedPath: extractedApp.path)
         }
 
-        // 5. Cleanup downloaded zip
+        // 6. Cleanup downloaded zip
         try? FileManager.default.removeItem(at: localZip)
 
-        // 6. Relaunch
+        // 7. Relaunch
         relaunch()
+    }
+
+    /// Valid Developer ID Application signature from `teamID`, including nested code.
+    private static func verifySignature(of app: URL) throws {
+        var staticCode: SecStaticCode?
+        guard SecStaticCodeCreateWithPath(app as CFURL, [], &staticCode) == errSecSuccess,
+              let staticCode else {
+            throw UpdateError.invalidSignature
+        }
+
+        // 1.2.840.113635.100.6.1.13 = Developer ID Application certificate
+        let requirementText = """
+        anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.13] \
+        and certificate leaf[subject.OU] = "\(teamID)"
+        """
+        var requirement: SecRequirement?
+        guard SecRequirementCreateWithString(requirementText as CFString, [], &requirement) == errSecSuccess,
+              let requirement else {
+            throw UpdateError.invalidSignature
+        }
+
+        let flags = SecCSFlags(rawValue: kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSStrictValidate)
+        guard SecStaticCodeCheckValidity(staticCode, flags, requirement) == errSecSuccess else {
+            throw UpdateError.invalidSignature
+        }
     }
 
     private static func download(_ url: URL, onProgress: @escaping (Double) -> Void) async throws -> URL {
@@ -99,12 +131,14 @@ enum UpdateError: LocalizedError {
     case downloadFailed
     case extractionFailed
     case privilegesFailed(String)
+    case invalidSignature
 
     var errorDescription: String? {
         switch self {
         case .downloadFailed: "Download failed"
         case .extractionFailed: "Failed to extract update"
         case .privilegesFailed(let msg): "Privileges error: \(msg)"
+        case .invalidSignature: "Update is not signed by the Harbor developer"
         }
     }
 }

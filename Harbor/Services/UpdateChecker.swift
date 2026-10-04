@@ -69,7 +69,10 @@ enum UpdateChecker {
         request.setValue("Harbor/\(currentVersion)", forHTTPHeaderField: "User-Agent")
 
         do {
-            let (data, _) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+                return .failed("GitHub API returned HTTP \(http.statusCode)")
+            }
             let release = try JSONDecoder().decode(GitHubRelease.self, from: data)
 
             guard let zipURL = release.zipURL else {

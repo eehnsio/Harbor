@@ -9,10 +9,17 @@ macOS menu bar app showing listening dev server ports. Native Swift/AppKit, no d
 - `killall Harbor` before rebuilding to avoid code signing conflicts
 - Two release skills:
   - `/install` — local only: build Release, copy to `/Applications`, relaunch. No git tag, no GitHub upload.
-  - `/release` — full ship: bump `MARKETING_VERSION` first, then commit → push → `/release` (tags `vX.Y.Z`, creates GitHub release, uploads zip, verifies version, installs locally, relaunches)
+  - `/release` — full ship: bump `MARKETING_VERSION` first, then commit → push → `/release` (tags `vX.Y.Z`, creates GitHub release, notarizes, uploads zip, verifies version, installs locally, relaunches)
 - When copying to /Applications: always `rm -rf` first, then `cp -R` — plain `cp -R` doesn't reliably replace all files in a .app bundle
 - Use `clean build` (not just `build`) when changes aren't picked up
-- Pre-build script injects git hash into Info.plist — run `git checkout -- Harbor/Info.plist` after building
+- Post-build script writes the git hash into the *built* Info.plist (tracked `Harbor/Info.plist` is never modified)
+
+## Signing
+
+- Team ID `735SV765PC`. Debug: Apple Development (automatic). Release: Developer ID Application (manual) + hardened runtime
+- Not distributable via App Store/TestFlight — sandbox would block libproc/sysctl/kill on other processes
+- Notarization uses the keychain profile `harbor` (`xcrun notarytool store-credentials harbor`)
+- `AppUpdater` refuses updates not signed with Developer ID from this team — every release zip MUST be Developer ID signed
 - Version is set via `MARKETING_VERSION` in `project.yml` — bump this before creating a new release tag
 
 ## Dependencies
@@ -24,7 +31,7 @@ macOS menu bar app showing listening dev server ports. Native Swift/AppKit, no d
 ## Architecture
 
 - `AppDelegate.swift` — NSStatusItem + NSMenu (not SwiftUI MenuBarExtra, because NSMenu supports custom NSView items)
-- `PortScanner.swift` — libproc API scan with lsof fallback
+- `PortScanner.swift` — libproc API scan with lsof fallback. Runs synchronously in `menuNeedsUpdate` (~7 ms); no background polling
 - `PortViewModel.swift` — consolidates ports by PID (one row per process, "+N" for extra ports)
 - `ProcessInspector.swift` — process name, args (sysctl KERN_PROCARGS2), cwd (PROC_PIDVNODEPATHINFO), uptime, memory
 - Display names resolved from command-line args (e.g. node → "next dev") and cwd (e.g. "/Users/erik/Developer/walle" → "walle / vite")
