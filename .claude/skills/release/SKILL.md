@@ -23,7 +23,7 @@ Full release flow: tag, GitHub release, build, version verification, notarizatio
 
 7. **Verify built version and signature** — read `CFBundleShortVersionString` from the built app's Info.plist in DerivedData. It MUST match the MARKETING_VERSION from project.yml. Then `codesign -dvv` the app and confirm `Authority=Developer ID Application` and `TeamIdentifier=735SV765PC`. Stop on any mismatch. The in-app updater rejects updates not signed by this team.
 
-8. **Notarize** — zip the built app (`ditto -ck --keepParent <built>/Harbor.app /tmp/Harbor-notarize.zip`), then `xcrun notarytool submit /tmp/Harbor-notarize.zip --keychain-profile harbor --wait`. If status is not `Accepted`, run `xcrun notarytool log <id> --keychain-profile harbor` and stop. If the `harbor` profile is missing, tell the user to run `xcrun notarytool store-credentials harbor` themselves (it needs an app-specific password — never enter it for them).
+8. **Notarize** — zip the built app (`ditto -ck --keepParent <built>/Harbor.app /tmp/Harbor-notarize.zip`), then `xcrun notarytool submit /tmp/Harbor-notarize.zip --keychain-profile harbor --wait`. This can take from a minute to over an hour — run it in the background rather than with a foreground timeout. If status is not `Accepted`, run `xcrun notarytool log <id> --keychain-profile harbor` and stop. If the `harbor` profile is missing, tell the user to run `xcrun notarytool store-credentials harbor` themselves (it needs an app-specific password — never enter it for them).
 
 9. **Staple and assess** — `xcrun stapler staple <built>/Harbor.app`, then `spctl -a -vvv -t exec <built>/Harbor.app` must report `source=Notarized Developer ID`.
 
