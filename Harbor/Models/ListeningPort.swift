@@ -77,7 +77,8 @@ struct ListeningPort: Identifiable, Hashable {
 
         // Known dev process names
         let devProcesses: Set<String> = ["node", "npm", "npx", "bun", "deno", "ruby", "python", "python3",
-                                          "java", "beam.smp", "mix", "cargo", "go", "php", "docker-proxy"]
+                                          "java", "beam.smp", "mix", "cargo", "go", "php", "docker-proxy",
+                                          "workerd"]  // wrangler's runtime, often orphaned on ephemeral ports
         if devProcesses.contains(processName) { return true }
 
         // Common dev server port ranges

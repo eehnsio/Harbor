@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Fixed
+
+- Orphaned `workerd` processes (left behind when `wrangler dev` dies) are shown even though they only listen on ephemeral ports
+
 ## [1.3.0] - 2026-10-04
 
 ### Added
